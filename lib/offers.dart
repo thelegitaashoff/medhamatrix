@@ -1,3 +1,5 @@
+// ignore_for_file: no_leading_underscores_for_local_identifiers, deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'test.dart';
 import 'counselling.dart';
@@ -37,10 +39,10 @@ class OffersPage extends StatelessWidget {
           route = '/';
           break;
         case 1:
-          route = '/test';
+          route = '/notifications';
           break;
         case 2:
-          route = '/counselling';
+          route = '/payment';
           break;
         case 3:
           route = '/profile';
@@ -68,6 +70,12 @@ class OffersPage extends StatelessWidget {
     }
     return Scaffold(
       backgroundColor: colorScheme.surface,
+      appBar: AppBar(
+        title: Text('Offers'),
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
+        elevation: 4,
+      ),
       body: Center(
         child: Text('Offers Page', style: Theme.of(context).textTheme.headlineMedium),
       ),
@@ -90,12 +98,12 @@ class OffersPage extends StatelessWidget {
               label: 'Home',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              label: 'Test',
+              icon: Icon(Icons.notifications),
+              label: 'Notifications',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.groups),
-              label: 'Counselling',
+              icon: Icon(Icons.payment),
+              label: 'Payment History',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.account_circle),
