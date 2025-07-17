@@ -20,8 +20,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Restored App',
+      title: 'Medhamatrics',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        fontFamily: 'Times New Roman',
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
