@@ -1,283 +1,172 @@
 import 'package:flutter/material.dart';
-import 'package:test/widgets/hover_icon_container.dart'; // Assuming this is the correct import path for _HoverIconContainer
-import 'dashboard.dart';
-import 'counselling.dart';
 import 'profile.dart';
-import 'settings.dart';
+import 'payment.dart';
 
-class TestPage extends StatelessWidget {
-  const TestPage({super.key});
+class TestSelectionPage extends StatefulWidget {
+  const TestSelectionPage({super.key});
 
-  Widget _buildCard(
-    BuildContext context,
-    String title,
-    String subtitle, {
-    Widget? icon,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final mediaQuery = MediaQuery.of(context);
-    final screenWidth = mediaQuery.size.width;
-    final screenHeight = mediaQuery.size.height;
-    Color boxColor;
-    Color textColor;
-    Color subtitleColor;
-    switch (title) {
-      case 'IQ Test':
-        boxColor = Color.fromARGB(237, 6, 247, 179);// Light Blue
-        textColor = Color.fromARGB(236, 0, 0, 0);
-        subtitleColor = Color.fromARGB(236, 0, 0, 0);
-        break;
-      case 'Personality Test':
-        boxColor = Color.fromARGB(250, 57, 201, 245); // Light Yellow
-        textColor = Color.fromARGB(236, 0, 0, 0);
-        subtitleColor = Color.fromARGB(236, 0, 0, 0);
-        break;
-      default:
-        boxColor = colorScheme.surface;
-        textColor = colorScheme.onSurface;
-        subtitleColor = colorScheme.onSurfaceVariant;
+  @override
+  State<TestSelectionPage> createState() => _TestSelectionPageState();
+}
+
+class _TestSelectionPageState extends State<TestSelectionPage> {
+  final List<Map<String, dynamic>> tests = [
+    {
+      'title': 'IQ Test',
+      'subtitle': 'Assess your logical intelligence',
+      'icon': Icons.lightbulb_outline,
+      'instructions': '• Read each question carefully.\n• There is no time limit.\n• No calculators allowed.\n• Answer honestly for best results.',
+    },
+    {
+      'title': 'Depression Scale',
+      'subtitle': 'Evaluate your emotional well-being',
+      'icon': Icons.sentiment_dissatisfied,
+      'instructions': '• Answer honestly based on your feelings.\n• There are no right or wrong answers.\n• This helps understand your emotional state.',
+    },
+    {
+      'title': 'EQ',
+      'subtitle': 'Measure your emotional intelligence',
+      'icon': Icons.favorite,
+      'instructions': '• Reflect on your emotional responses.\n• Answer all questions sincerely.\n• Helps in understanding your emotional skills.',
+    },
+    {
+      'title': 'REBT',
+      'subtitle': 'Rational Emotive Behavior Therapy assessment',
+      'icon': Icons.psychology,
+      'instructions': '• Focus on your thought patterns.\n• Answer based on your typical reactions.\n• Aids in cognitive behavioral understanding.',
+    },
+    {
+      'title': 'CBT',
+      'subtitle': 'Cognitive Behavioral Therapy assessment',
+      'icon': Icons.self_improvement,
+      'instructions': '• Consider your behaviors and thoughts.\n• Answer honestly for accurate results.\n• Helps in identifying behavioral patterns.',
+    },
+  ];
+
+  final Color iconColor = const Color.fromARGB(250, 57, 201, 245);
+
+  int _selectedIndex = 0;
+
+ void _onItemTapped(int index) {
+    if (index == 0 || index == 1) {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (context) => EditableProfilePage()),
+      );
+    } else {
+      setState(() {
+        _selectedIndex = index;
+      });
     }
-    Color iconBgColor = boxColor;
-    Color iconColor = textColor;
-    switch (title) {
-      case 'IQ Test':
-        iconBgColor = Color.fromARGB(237, 6, 247, 179);
-        iconColor = Color.fromARGB(237, 6, 247, 179);
-        break;
-      case 'Personality Test':
-        iconBgColor = Color.fromARGB(250, 57, 201, 245);
-        iconColor = Color.fromARGB(250, 57, 201, 245);
-        break;
-      default:
-        iconBgColor = colorScheme.surface;
-        iconColor = colorScheme.primary;
-    }
-    return Container(
-      decoration: BoxDecoration(
-        color: boxColor,
-        borderRadius: BorderRadius.circular(screenWidth * 0.04),
-        border: Border.all(
-          color: colorScheme.outline,
-          width: screenWidth * 0.005,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color.fromARGB(255, 255, 255, 255).withOpacity(0.4),
-            blurRadius: 12,
-            spreadRadius: 1,
-            offset: Offset(0, 6),
-          ),
-          BoxShadow(
-            color: boxColor.withOpacity(0.28),
-            blurRadius: screenWidth * 0.055,
-            offset: Offset(0, screenHeight * 0.012),
-          ),
-          BoxShadow(
-            color: Colors.white.withOpacity(0.12),
-            blurRadius: screenWidth * 0.015,
-            offset: Offset(-screenWidth * 0.01, -screenHeight * 0.006),
-          ),
-        ],
-      ),
-      padding: EdgeInsets.all(screenWidth * 0.04),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                    fontSize: 22,
-                  ),
-                ),
-              ),
-              if (icon != null)
-                HoverIconContainer(
-                  iconBgColor: iconBgColor,
-                  iconColor: iconColor,
-                  child: icon,
-                ),
-            ],
-          ),
-          if (subtitle.isNotEmpty) ...[
-            SizedBox(height: 10),
-            Flexible(
-              child: Text(
-                subtitle,
-                style: TextStyle(
-                  color: subtitleColor,
-                  fontSize: 20,
-                  fontWeight: FontWeight.normal,
-                ),
-                maxLines: null,
-                overflow: TextOverflow.visible,
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final mediaQuery = MediaQuery.of(context);
-    final screenWidth = mediaQuery.size.width;
-
-    final int _selectedIndex = 1;
-    void _onItemTapped(int index) {
-      String route;
-      switch (index) {
-        case 0:
-          route = '/';
-          break;
-        case 1:
-          route = '/notifications';
-          break;
-        case 2:
-          route = '/payment';
-          break;
-        case 3:
-          route = '/profile';
-          break;
-        case 4:
-          route = '/settings';
-          break;
-        default:
-          route = '/';
-      }
-      if (ModalRoute.of(context)?.settings.name != route) {
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) {
-              switch (route) {
-                case '/counselling':
-                  return CounsellingPage();
-                case '/profile':
-                  return ProfilePage();
-                case '/settings':
-                  return SettingsPage();
-                case '/test':
-                  return TestPage();
-                default:
-                  return Dashboard();
-              }
-            },
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
-            transitionDuration: Duration(milliseconds: 350),
-          ),
-        );
-      }
-    }
-
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
+        title: Text("Tests", style: TextStyle(color: Colors.black)),
+        centerTitle: true,
         backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
-          onPressed: () {
-            Navigator.of(context).pushReplacement(
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) => Dashboard(),
-                transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                  return FadeTransition(opacity: animation, child: child);
-                },
-                transitionDuration: Duration(milliseconds: 350),
-              ),
-            );
-          },
-        ),
+        iconTheme: IconThemeData(color: Colors.black),
+        elevation: 1,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.all(screenWidth * 0.03),
-          child: Column(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: Text('🧠 IQ Test Prep'),
-                      content: Text(
-                        '৹ Answer all 50 questions\n\n'
-                        '৹ Each question is has one correct option\n\n'
-                        '৹ You have 15 minutes to complete the test\n\n'
-                        '৹ Do not use external tools\n\n'
-                        '৹ Tap Start to begin the IQ test\n\n'
-                        '➡️',
-                        style: TextStyle(fontSize: screenWidth * 0.06),
-                      ),
-                      actions: [
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: colorScheme.primary,
-                              foregroundColor: colorScheme.onPrimary,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              padding: EdgeInsets.symmetric(
-                                vertical: 14,
-                                horizontal: 18,
-                              ),
-                              elevation: 3,
-                              textStyle: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: screenWidth * 0.06,
-                              ),
-                            ),
-                            icon: Icon(
-                              Icons.play_arrow,
-                              size: screenWidth * 0.06,
-                            ),
-                            label: Text('Start'),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                              Navigator.pushNamed(
-                                context,
-                                '/payment',
-                                arguments: {
-                                  'courseName': 'IQ Test',
-                                  'price': '0',
-                                },
-                              );
-                            },
+      backgroundColor: const Color.fromARGB(255, 224, 248, 255),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: tests.map((test) {
+            return Container(
+              margin: EdgeInsets.only(bottom: 18),
+              padding: EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: Colors.white, // Box color white
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 8,
+                    offset: Offset(0, 5),
+                  )
+                ],
+                border: Border.all(color: Colors.grey[200]!, width: 0.7),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    backgroundColor: Color.fromARGB(255, 224, 248, 255), // Icon background white
+                    child: Icon(test['icon'], color: iconColor, size: 28), // Icon color as specified
+                    radius: 28,
+                  ),
+                  SizedBox(width: 18),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          test['title'],
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black, // Black text
+                          ),
+                        ),
+                        SizedBox(height: 5),
+                        Text(
+                          test['subtitle'],
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black, // Black text
                           ),
                         ),
                       ],
                     ),
-                  );
-                },
-                child: _buildCard(
-                  context,
-                  'IQ Test',
-                  'Test your IQ level',
-                  icon: Icon(Icons.psychology, color: colorScheme.primary, size: 50),
-                ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => AlertDialog(
+                          backgroundColor: Color.fromARGB(255, 255, 255, 255),
+                          title: Text(
+                            'Pre-Exam Instructions',
+                            style: TextStyle(color: Colors.black),
+                          ),
+                          content: Text(
+                            test['instructions'],
+                            style: TextStyle(color: Colors.black),
+                          ),
+                          actions: [
+                            TextButton(
+                              child: Text('Cancel', style: TextStyle(color: iconColor)),
+                              onPressed: () => Navigator.pop(context),
+                            ),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Color.fromARGB(255, 224, 248, 255),
+                              ),
+                              child: Text('Proceed', style: TextStyle(color: Colors.black)),
+                              onPressed: () {
+                                Navigator.pop(context);
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(builder: (context) => PaymentPage()),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                    backgroundColor: iconColor, // 
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text("Start", style: TextStyle(color: Color.fromARGB(255, 224, 248, 255),)),
+                  ),
+                ],
               ),
-              SizedBox(height: screenWidth * 0.03),
-              _buildCard(
-                context,
-                'Personality Test',
-                'Discover your personality traits',
-                icon: Icon(Icons.person, color: colorScheme.primary, size: 50),
-              ),
-            ],
-          ),
+            );
+          }).toList(),
         ),
       ),
     );
