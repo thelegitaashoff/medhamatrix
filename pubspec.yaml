@@ -1,4 +1,4 @@
-name: medhamatrics
+name: medhamatrix
 description: "A new Flutter project."
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
@@ -11,39 +11,62 @@ dependencies:
   flutter:
     sdk: flutter
 
+  provider: ^6.0.5
+  carousel_slider: ^5.1.1
   cupertino_icons: ^1.0.8
   flutter_screenutil: ^5.5.4+2
   intl: ^0.20.2
   animate_do: ^4.2.0
   test: ^1.25.15
+  flutter_launcher_icons: ^0.14.4
+  video_player: ^2.7.0 # (Check for latest version)
+  flutter_localizations:
+    sdk: flutter
+  flutter_localization: ^0.3.3
+  url_launcher: ^6.3.2
+  http: ^0.13.4
+  shared_preferences: ^2.5.3
+  connectivity_plus: ^6.1.4
+  crypto: ^3.0.3
+  webview_flutter: ^4.4.4
+
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_launcher_icons: "^0.14.4"
+  flutter_lints: ^6.0.0
 
 flutter_launcher_icons:
-  android: "launcher_icon"
+  android: true
   ios: true
-  image_path: "assets/icons/app_logo.jpg"
+  image_path: "assets/app_logo.png"
 
-flutter_lints: ^6.0.0
+l10n:
+    arb-dir: lib/l10n
+    template-arb-file: app_en.arb
+    output-localization-file: app_localizations.dart
 
 flutter:
   uses-material-design: true
+  generate: true
+
 
   assets:
     - lib/fonts/
-    - assets/icons/IQ_test.png
+    - assets\icons\IQ_test.png
     - assets/icons/student_counseling.png
     - assets/icons/parent_counseling.png
     - assets/icons/our_team.png
     - assets/icons/home.png
     - assets/avatar.jpg
     - assets/background.png
-    - assets/icons/app_logo.jpg
+    - assets/icons/app_logo.png
     - assets/icons/test_gif.gif
-    - assets/team/Mrs Pooja wankhade.jpg
+    - assets/team/
+    - assets/images/slider2.jpg
+    - assets\images\slider1.png
+    - assets/app_logo.png
+    - assets/slpash_screen.mp4
 
   fonts:
     - family: RobotoSlab

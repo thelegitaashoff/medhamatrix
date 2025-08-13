@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'profile.dart';
+import 'payment.dart';
 
 class AboutUsMedhaMatrixPage extends StatefulWidget {
   const AboutUsMedhaMatrixPage({super.key});
@@ -7,86 +9,49 @@ class AboutUsMedhaMatrixPage extends StatefulWidget {
   State<AboutUsMedhaMatrixPage> createState() => _AboutUsMedhaMatrixPageState();
 }
 
-class _AboutUsMedhaMatrixPageState extends State<AboutUsMedhaMatrixPage> {
-  int _selectedIndex = 0;
+class _AboutUsMedhaMatrixPageState extends State<AboutUsMedhaMatrixPage> with SingleTickerProviderStateMixin {
+  final List<Map<String, dynamic>> aboutItems = [
+    {
+      'title': 'Our Mission',
+      'content': 'To empower students, parents, and teachers intellectually and emotionally, building a positive, understanding, and inspiring educational environment for all.',
+      'icon': Icons.visibility_rounded,
+    },
+    {
+      'title': 'Introduction to MedhaMatrix',
+      'content': 'Medhamatrix, built by Vidyasagar Multipurpose Foundation, is dedicated to empowering students, parents, and teachers through mental, educational, social, and personal development. Our team fosters positive life transformations via counseling, guidance, and targeted support—helping individuals return to the right path and thrive. We serve both urban and rural communities and bridge access to government schemes for the underprivileged.',
+      'icon': Icons.lightbulb_rounded,
+    },
+    {
+      'title': 'Why us?',
+      'content': 'In today\'s fast-paced, high-pressure world, students face mounting expectations without always receiving personal evaluation of their own strengths. This can result in stress, anxiety, or loss of direction. MedhaMatrix addresses these unmet needs with intellectual assessments and tailored guidance, preventing negative outcomes through proactive understanding and support.',
+      'icon': Icons.psychology_rounded,
+    },
+    {
+      'title': 'Programs & Benefits',
+      'content': 'Personalized, scientific IQ assessments and detailed reports.\nOfficial IQ certificates for academic/personal portfolios.\nFree first counseling session (joint for student and parent).\nExpert counseling for exam stress, confidence, mindset, and open family communication.\nAnnual training for teachers on IQ, EQ, behavioral analysis, and classroom strategies.\nSpecial parent initiatives: counseling, expert talks, Q&A, and conclave events.',
+      'icon': Icons.workspace_premium_rounded,
+    },
+    {
+      'title': 'Who We Help',
+      'content': 'Students: Identify intelligence, personality, and guide toward the best education/career fit.\nParents: Practical advice for building self-confidence, handling academic difficulties, exam stress, and supporting growth.\nTeachers: Empowerment to understand and support each child’s unique potential.',
+      'icon': Icons.groups_rounded,
+    },
+    {
+      'title': 'Contact',
+      'content': 'Email: support@medhamatrix.com\nWebsite: www.medhamatrix.com',
+      'icon': Icons.email_rounded,
+    },
+  ];
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    // Add navigation logic here if needed
+  final Color iconColor = const Color.fromARGB(250, 57, 201, 245);
+
+  List<bool> _expanded = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _expanded = List<bool>.filled(aboutItems.length, false);
   }
-
-  Widget boxedSection({
-    required String title,
-    required Widget body,
-    IconData? icon,
-    Color? iconBg,
-  }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 12),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.10),
-            blurRadius: 14,
-            spreadRadius: 3,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: Border.all(color: Colors.blueGrey.shade100, width: 1),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (icon != null)
-            Container(
-              width: 42,
-              height: 42,
-              margin: const EdgeInsets.only(right: 16),
-              decoration: BoxDecoration(
-                color: iconBg ?? Colors.blue,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: Colors.white, size: 28),
-            ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title,
-                    style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87)),
-                const SizedBox(height: 7),
-                body,
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget bulletList(List<String> items) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: items
-            .map((e) => Padding(
-                  padding: const EdgeInsets.only(bottom: 6.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text("• ", style: TextStyle(fontSize: 17)),
-                      Expanded(child: Text(e, style: const TextStyle(fontSize: 15.5))),
-                    ],
-                  ),
-                ))
-            .toList(),
-      );
 
   @override
   Widget build(BuildContext context) {
@@ -95,93 +60,84 @@ class _AboutUsMedhaMatrixPageState extends State<AboutUsMedhaMatrixPage> {
         title: const Text("About Us"),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
-        elevation: 0,
+        elevation: 1,
       ),
       backgroundColor: const Color.fromARGB(255, 224, 248, 255),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Mission block at the very top
-              boxedSection(
-                title: "Our Mission",
-                icon: Icons.visibility_rounded,
-                iconBg: Colors.orange,
-                body: const Text(
-                  "To empower students, parents, and teachers intellectually and emotionally, building a positive, understanding, and inspiring educational environment for all.",
-                  style: TextStyle(fontSize: 15.5, fontStyle: FontStyle.italic, color: Colors.deepOrange),
-                ),
-              ),
-              // Organization Introduction
-              boxedSection(
-                title: "Introduction to MedhaMatrics",
-                icon: Icons.lightbulb_rounded,
-                iconBg: Colors.deepPurple,
-                body: Padding(
-                  padding: const EdgeInsets.only(top: 2.0),
-                  child: RichText(
-                    text: TextSpan(
-                      style: const TextStyle(fontSize: 15.5, color: Colors.black),
-                      children: [
-                        const TextSpan(text: "Medhamatrics, built by "),
-                        TextSpan(
-                          text: "Vidyasagar Multipurpose Foundation",
-                          style: TextStyle(color: Colors.deepPurple.shade700, fontWeight: FontWeight.bold),
+            children: aboutItems.asMap().entries.map((entry) {
+              int idx = entry.key;
+              Map<String, dynamic> item = entry.value;
+              bool isExpanded = _expanded[idx];
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _expanded[idx] = !isExpanded;
+                  });
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                  margin: const EdgeInsets.only(bottom: 20),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 8,
+                        offset: Offset(0, 5),
+                      ),
+                    ],
+                    border: Border.all(color: Colors.grey.shade200, width: 0.7),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor: const Color.fromARGB(255, 224, 248, 255),
+                            child: Icon(item['icon'], color: iconColor, size: 28),
+                            radius: 28,
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Text(
+                              item['title'],
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ),
+                          Icon(
+                            isExpanded ? Icons.expand_less : Icons.expand_more,
+                            color: Colors.black54,
+                          ),
+                        ],
+                      ),
+                      AnimatedCrossFade(
+                        firstChild: Container(),
+                        secondChild: Padding(
+                          padding: const EdgeInsets.only(top: 12),
+                          child: Text(
+                            item['content'],
+                            style: const TextStyle(fontSize: 15.5, color: Colors.black87),
+                          ),
                         ),
-                        const TextSpan(text: ", is dedicated to empowering students, parents, and teachers through mental, educational, social, and personal development. Our team fosters positive life transformations via counseling, guidance, and targeted support—helping individuals return to the right path and thrive. We serve both urban and rural communities and bridge access to government schemes for the underprivileged."),
-                      ],
-                    ),
+                        crossFadeState: isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                        duration: const Duration(milliseconds: 300),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              // Why MedhaMatrix
-              boxedSection(
-                title: "Why us?",
-                icon: Icons.psychology_rounded,
-                iconBg: Colors.indigo,
-                body: const Text(
-                  "In today's fast-paced, high-pressure world, students face mounting expectations without always receiving personal evaluation of their own strengths. This can result in stress, anxiety, or loss of direction. MedhaMatrix addresses these unmet needs with intellectual assessments and tailored guidance, preventing negative outcomes through proactive understanding and support.",
-                  style: TextStyle(fontSize: 15.5),
-                ),
-              ),
-              // MedhaMatrix Benefits & Programs
-              boxedSection(
-                  title: "Programs & Benefits",
-                  icon: Icons.workspace_premium_rounded,
-                  iconBg: Colors.teal,
-                  body: bulletList([
-                    "Personalized, scientific IQ assessments and detailed reports.",
-                    "Official IQ certificates for academic/personal portfolios.",
-                    "Free first counseling session (joint for student and parent).",
-                    "Expert counseling for exam stress, confidence, mindset, and open family communication.",
-                    "Annual training for teachers on IQ, EQ, behavioral analysis, and classroom strategies.",
-                    "Special parent initiatives: counseling, expert talks, Q&A, and conclave events.",
-                  ])),
-              // Who We Help
-              boxedSection(
-                  title: "Who We Help",
-                  icon: Icons.groups_rounded,
-                  iconBg: Colors.green,
-                  body: bulletList([
-                    "Students: Identify intelligence, personality, and guide toward the best education/career fit.",
-                    "Parents: Practical advice for building self-confidence, handling academic difficulties, exam stress, and supporting growth.",
-                    "Teachers: Empowerment to understand and support each child’s unique potential.",
-                  ])),
-              // Contact
-              boxedSection(
-                  title: "Contact",
-                  icon: Icons.email_rounded,
-                  iconBg: Colors.blue,
-                  body: const Padding(
-                    padding: EdgeInsets.only(top: 4.0),
-                    child: Text(
-                      "Email: support@medhamatrics.com\nWebsite: www.medhamatrics.com",
-                      style: TextStyle(fontSize: 15.5, color: Colors.indigo),
-                    ),
-                  )),
-            ],
+              );
+            }).toList(),
           ),
         ),
       ),

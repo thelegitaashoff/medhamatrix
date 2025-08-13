@@ -1,0 +1,497 @@
+Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Privacy & Security'),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            Text(
+              'Privacy & Security Policy',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Effective Date: [DD/MM/YYYY]',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Your privacy is important to us. This policy explains how the Medha Matrix app collects, uses, and protects your data.',
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 24),
+            Text(
+              '🔐 1. What Data We Collect',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'We collect limited information to help you get personalized insights and support:',
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 8),
+            Text(
+              '• Basic Information: Name, age, gender, school/college name, contact details (only if required)',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              '• Assessment Data: Answers and scores from IQ tests, personality tests, and counseling tools',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              '• App Usage Data: Device type, test progress, app feedback, and crash reports (to improve app performance)',
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 24),
+            Text(
+              '🎯 2. Purpose of Data Collection',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'We collect and use your data to:',
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 8),
+            Text(
+              '• Provide personalized IQ and counseling results',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              '• Track your growth and progress',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              '• Offer suitable guidance or educational suggestions',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              '• Improve the app features and user experience',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              '• Maintain safety and ensure appropriate use of the app',
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 24),
+            Text(
+              '🤝 3. Data Sharing & Confidentiality',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'We do NOT sell or misuse your data. We only share data in these situations:',
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 8),
+            Text(
+              '• With your permission or consent',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              '• With parents or authorized counselors (to provide support and feedback)',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              '• With trusted service providers (such as secure servers or analytics tools)',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              '• As required by law, if necessary',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              'All shared data is handled confidentially and securely.',
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 24),
+            Text(
+              '🔒 4. How We Protect Your Data',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Your data security is a top priority. We use:',
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 8),
+            Text(
+              '• Strong encryption for data storage and transmission',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              '• Password-protected user access',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              '• Secure cloud storage',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              '• Regular safety checks and updates',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              'Only authorized team members can access your information — and only when necessary.',
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 24),
+            Text(
+              '📅 5. How Long We Keep Data',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'We store your information only as long as it\'s needed for:',
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 8),
+            Text(
+              '• Test history and progress tracking',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              '• Counseling or educational use',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              '• Legal or institutional requirements (if applicable)',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              'You may request deletion of your data anytime.',
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 24),
+            Text(
+              '👶 6. Child & Student Safety',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'If you\'re under 18, we ask for parental consent before collecting personal data. All student-related information is handled with care and used only for guidance and development.',
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 24),
+            Text(
+              '✅ 7. Your Rights',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'You have the right to:',
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 8),
+            Text(
+              '• View the data we have collected',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              '• Correct or update your data',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              '• Request that we delete your data',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              '• Contact us with privacy-related concerns',
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'To make any such request, contact us at:',
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 8),
+            Text(
+              '📧 Email: [support@medhamatrix.com]',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              '📞 Phone: [+91-XXXXXXXXXX]',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              '🏢 Address: [Your institute or company address]',
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 24),
+            Text(
+              '🔁 8. Changes to This Policy',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'We may update this policy to improve clarity or comply with legal rules. You will be notified within the app if any major changes are made.',
+              style: TextStyle(fontSize: 16),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+=======
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Privacy & Security'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+        elevation: 1,
+      ),
+      backgroundColor: const Color.fromARGB(255, 224, 248, 255),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 20, left: 22, right: 22, top: 18),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 8,
+                  offset: Offset(0, 5),
+                ),
+              ],
+              border: Border.all(color: Colors.grey.shade200, width: 0.7),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                Text(
+                  'Privacy & Security Policy',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Effective Date: [DD/MM/YYYY]',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'Your privacy is important to us. This policy explains how the Medha Matrix app collects, uses, and protects your data.',
+                  style: TextStyle(fontSize: 16),
+                ),
+                SizedBox(height: 24),
+                Text(
+                  '🔐 1. What Data We Collect',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'We collect limited information to help you get personalized insights and support:',
+                  style: TextStyle(fontSize: 16),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  '• Basic Information: Name, age, gender, school/college name, contact details (only if required)',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  '• Assessment Data: Answers and scores from IQ tests, personality tests, and counseling tools',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  '• App Usage Data: Device type, test progress, app feedback, and crash reports (to improve app performance)',
+                  style: TextStyle(fontSize: 16),
+                ),
+                SizedBox(height: 24),
+                Text(
+                  '🎯 2. Purpose of Data Collection',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'We collect and use your data to:',
+                  style: TextStyle(fontSize: 16),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  '• Provide personalized IQ and counseling results',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  '• Track your growth and progress',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  '• Offer suitable guidance or educational suggestions',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  '• Improve the app features and user experience',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  '• Maintain safety and ensure appropriate use of the app',
+                  style: TextStyle(fontSize: 16),
+                ),
+                SizedBox(height: 24),
+                Text(
+                  '🤝 3. Data Sharing & Confidentiality',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'We do NOT sell or misuse your data. We only share data in these situations:',
+                  style: TextStyle(fontSize: 16),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  '• With your permission or consent',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  '• With parents or authorized counselors (to provide support and feedback)',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  '• With trusted service providers (such as secure servers or analytics tools)',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  '• As required by law, if necessary',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  'All shared data is handled confidentially and securely.',
+                  style: TextStyle(fontSize: 16),
+                ),
+                SizedBox(height: 24),
+                Text(
+                  '🔒 4. How We Protect Your Data',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Your data security is a top priority. We use:',
+                  style: TextStyle(fontSize: 16),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  '• Strong encryption for data storage and transmission',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  '• Password-protected user access',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  '• Secure cloud storage',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  '• Regular safety checks and updates',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  'Only authorized team members can access your information — and only when necessary.',
+                  style: TextStyle(fontSize: 16),
+                ),
+                SizedBox(height: 24),
+                Text(
+                  '📅 5. How Long We Keep Data',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'We store your information only as long as it\'s needed for:',
+                  style: TextStyle(fontSize: 16),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  '• Test history and progress tracking',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  '• Counseling or educational use',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  '• Legal or institutional requirements (if applicable)',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  'You may request deletion of your data anytime.',
+                  style: TextStyle(fontSize: 16),
+                ),
+                SizedBox(height: 24),
+                Text(
+                  '👶 6. Child & Student Safety',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'If you\'re under 18, we ask for parental consent before collecting personal data. All student-related information is handled with care and used only for guidance and development.',
+                  style: TextStyle(fontSize: 16),
+                ),
+                SizedBox(height: 24),
+                Text(
+                  '✅ 7. Your Rights',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'You have the right to:',
+                  style: TextStyle(fontSize: 16),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  '• View the data we have collected',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  '• Correct or update your data',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  '• Request that we delete your data',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  '• Contact us with privacy-related concerns',
+                  style: TextStyle(fontSize: 16),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'To make any such request, contact us at:',
+                  style: TextStyle(fontSize: 16),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  '📧 Email: [support@medhamatrix.com]',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  '📞 Phone: [+91-XXXXXXXXXX]',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  '🏢 Address: [Your institute or company address]',
+                  style: TextStyle(fontSize: 16),
+                ),
+                SizedBox(height: 24),
+                Text(
+                  '🔁 8. Changes to This Policy',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'We may update this policy to improve clarity or comply with legal rules. You will be notified within the app if any major changes are made.',
+                  style: TextStyle(fontSize: 16),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }

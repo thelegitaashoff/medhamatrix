@@ -1,0 +1,17 @@
+{
+  "@@locale": "mr",
+  "language": "भाषा",
+  "welcome": "स्वागत आहे",
+  "english": "इंग्रजी",
+  "hindi": "हिंदी",
+  "marathi": "मराठी",
+  "name": "नाव",
+  "age": "वय",
+  "birthday": "वाढदिवस",
+  "school": "शाळा",
+  "email": "ईमेल",
+  "phone": "फोन",
+  "save": "जतन करा",
+  "cancel": "रद्द करा",
+  "editProfile": "प्रोफाइल संपादित करा"
+}

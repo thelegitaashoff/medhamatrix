@@ -1,0 +1,17 @@
+{
+  "@@locale": "en",
+  "language": "Language",
+  "welcome": "Welcome",
+  "english": "English",
+  "hindi": "Hindi",
+  "marathi": "Marathi",
+  "name": "Name",
+  "age": "Age",
+  "birthday": "Birthday",
+  "school": "School",
+  "email": "Email",
+  "phone": "Phone",
+  "save": "Save",
+  "cancel": "Cancel",
+  "editProfile": "Edit Profile"
+}

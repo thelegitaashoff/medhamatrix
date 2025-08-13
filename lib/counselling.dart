@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'booking_section_page.dart'; // Make sure this file exists and is properly set up
 import 'profile.dart';
 import 'dashboard.dart';
+import 'payment.dart';
 
 class CounselingSelectionPage extends StatefulWidget {
-  const CounselingSelectionPage({super.key});
+  final bool openStudentCounselingDialogOnLoad;
+  final bool openParentCounselingDialogOnLoad;
+
+  const CounselingSelectionPage({super.key, this.openStudentCounselingDialogOnLoad = false, this.openParentCounselingDialogOnLoad = false});
 
   @override
   State<CounselingSelectionPage> createState() => _CounselingSelectionPageState();
@@ -12,6 +16,103 @@ class CounselingSelectionPage extends StatefulWidget {
 
 class _CounselingSelectionPageState extends State<CounselingSelectionPage> {
   int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.openStudentCounselingDialogOnLoad) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showStudentCounselingDialog();
+      });
+    }
+    if (widget.openParentCounselingDialogOnLoad) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showParentCounselingDialog();
+      });
+    }
+  }
+
+  void _showStudentCounselingDialog() {
+    final counsel = counselors.firstWhere((c) => c['title'] == 'Student Counseling');
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: Text(
+          'Student Counseling Instructions',
+          style: TextStyle(color: Colors.black),
+        ),
+        content: Text(
+          counsel['instructions'],
+          style: TextStyle(color: Colors.black),
+        ),
+        actions: [
+          TextButton(
+            child: Text('Cancel', style: TextStyle(color: iconColor)),
+            onPressed: () => Navigator.pop(context),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: iconColor,
+            ),
+            child: Text('Proceed', style: TextStyle(color: Colors.white)),
+            onPressed: () {
+              Navigator.pop(context); // Close the instructions dialog
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BookingSectionPage(
+                    initialCounselor: counsel['title'],
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showParentCounselingDialog() {
+    final counsel = counselors.firstWhere((c) => c['title'] == 'Parent Guidance');
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: Text(
+          'Parent Counseling Instructions',
+          style: TextStyle(color: Colors.black),
+        ),
+        content: Text(
+          counsel['instructions'],
+          style: TextStyle(color: Colors.black),
+        ),
+        actions: [
+          TextButton(
+            child: Text('Cancel', style: TextStyle(color: iconColor)),
+            onPressed: () => Navigator.pop(context),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: iconColor,
+            ),
+            child: Text('Proceed', style: TextStyle(color: Colors.white)),
+            onPressed: () {
+              Navigator.pop(context); // Close the instructions dialog
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BookingSectionPage(
+                    initialCounselor: counsel['title'],
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
 
   void _onItemTapped(int index) {
     if (index == 0) {
@@ -39,14 +140,14 @@ class _CounselingSelectionPageState extends State<CounselingSelectionPage> {
           '• Sessions are confidential.\n• Bring any academic or personal concerns.\n• Arrive 5 minutes early.\n• Be honest for best support.',
     },
     {
-      'title': 'Career Guidance',
+      'title': 'Career Counseling',
       'subtitle': 'Explore career options and planning',
       'icon': Icons.work_outline,
       'instructions':
           '• Prepare your questions in advance.\n• Discuss strengths and interests.\n• Career resources will be provided.\n• Sessions last 30 minutes.',
     },
     {
-      'title': 'Parent Guidance',
+      'title': 'Parent Counseling',
       'subtitle': 'Support for parenting challenges and advice',
       'icon': Icons.family_restroom,
       'instructions':

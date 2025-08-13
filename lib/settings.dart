@@ -53,10 +53,14 @@ class SettingsPage extends StatelessWidget {
             settingBox(
               Row(
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 28,
-                    backgroundImage: NetworkImage(
-                        "https://api.multiavatar.com/medhamatrics_user.png"), // Replace with user's image asset/path
+                    backgroundColor: Colors.teal.withOpacity(0.2),
+                    child: Icon(
+                      Icons.person,
+                      size: 32,
+                      color: Colors.teal,
+                    ),
                   ),
                   const SizedBox(width: 16),
                   Column(
@@ -67,7 +71,14 @@ class SettingsPage extends StatelessWidget {
                         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                       ),
                       SizedBox(height: 4),
-                      // Removed user email display as requested
+                      Text(
+                        'Username: $userName',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Color.fromARGB(250, 57, 201, 245),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ],
                   ),
                   const Spacer(),
@@ -152,12 +163,12 @@ class SettingsPage extends StatelessWidget {
                 break;
               case 'Notifications':
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => NotificationsPage()),
+                  MaterialPageRoute(builder: (context) => NotificationSettingsPage()),
                 );
                 break;
               case 'Theme':
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => ThemePage()),
+                  MaterialPageRoute(builder: (context) => ThemeSelectionPage()),
                 );
                 break;
               case 'Privacy & Security':

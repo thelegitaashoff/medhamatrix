@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-
+import 'phonepe_payment_page.dart';
+import 'upi_payment_options.dart';
 class PaymentOption {
   final IconData icon;
   final String title;
@@ -24,37 +25,52 @@ class PaymentPage extends StatefulWidget {
 class _PaymentPageState extends State<PaymentPage> {
   int? selectedIndex;
 
-  final List<PaymentOption> paymentOptions = [
-    PaymentOption(
-      icon: Icons.credit_card,
-      title: "Credit / Debit Card",
-      subtitle: "Pay securely using your card",
-    ),
-    PaymentOption(
-      icon: Icons.qr_code_scanner_rounded,
-      title: "UPI / QR",
-      subtitle: "Google Pay, PhonePe, Paytm, etc.",
-    ),
-    PaymentOption(
-      icon: Icons.account_balance_rounded,
-      title: "Net Banking",
-      subtitle: "Pay directly from your bank account",
-    ),
-    PaymentOption(
-      icon: Icons.account_balance_wallet_rounded,
-      title: "Wallets",
-      subtitle: "Mobikwik, Freecharge, etc.",
-    ),
-    PaymentOption(
-      icon: Icons.paypal_rounded,
-      title: "PayPal",
-      subtitle: "Pay using your PayPal account",
-    ),
-    // Removed Cash on Delivery option as requested
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final List<PaymentOption> paymentOptions = [
+      PaymentOption(
+        icon: Icons.credit_card,
+        title: "Credit / Debit Card",
+        subtitle: "Pay securely using your card",
+      ),
+      PaymentOption(
+        icon: Icons.qr_code_scanner_rounded,
+        title: "UPI / QR",
+        subtitle: "Google Pay, PhonePe, Paytm, etc.",
+        onTap: () {
+          // Navigate to UPI options page
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => UpiPaymentOptionsPage(
+                amount: 100.0, // This should be dynamic based on your app
+                userId: 'user123', // This should be dynamic
+                callbackUrl: 'https://yourapp.com/payment/callback',
+              ),
+            ),
+          );
+        },
+      ),
+      PaymentOption(
+        icon: Icons.payment,
+        title: "PhonePe",
+        subtitle: "Pay securely with PhonePe gateway",
+        onTap: () {
+          // Navigate to PhonePe payment page
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PhonePePaymentPage(
+                amount: 100.0, // This should be dynamic based on your app
+                userId: 'user123', // This should be dynamic
+                callbackUrl: 'https://yourapp.com/payment/callback',
+              ),
+            ),
+          );
+        },
+      ),
+    ];
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Choose Payment Method'),
@@ -77,11 +93,17 @@ class _PaymentPageState extends State<PaymentPage> {
                 label: const Text("Proceed to Pay", style: TextStyle(fontSize: 16)),
                 onPressed: selectedIndex != null
                     ? () {
-                        // Put your payment gateway integration or navigation here
-                        final chosen = paymentOptions[selectedIndex!].title;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Selected: $chosen")),
-                        );
+                        final selectedOption = paymentOptions[selectedIndex!];
+                        if (selectedOption.onTap != null) {
+                          selectedOption.onTap!();
+                        } else {
+                          // Handle other payment methods
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("${selectedOption.title} integration coming soon!"),
+                            ),
+                          );
+                        }
                       }
                     : null,
                 style: ElevatedButton.styleFrom(

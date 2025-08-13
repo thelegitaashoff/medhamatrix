@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'dashboard.dart';
 import 'counselling.dart';
-import 'profile.dart';
+import 'booking_section_page.dart';
+ import 'profile.dart';
 import 'settings.dart';
 import 'test.dart';
-import 'payment.dart';
-import 'certificate_download.dart';
-import 'password_recovery_screen.dart';
 import 'dart:async';
 
 class Dashboard extends StatefulWidget {
@@ -16,31 +13,20 @@ class Dashboard extends StatefulWidget {
   State<Dashboard> createState() => _DashboardState();
 }
 
-class _DashboardState extends State<Dashboard> {
-  int _selectedIndex = 0;
-  String userName = "Therese Webb";
 
-  late final PageController _pageController;
+
+class _DashboardState extends State<Dashboard> {
+  final PageController _pageController = PageController(viewportFraction: 0.85);
   int _currentPage = 0;
-  final int _numPages = 3;
-  Timer? _timer;
+  int _selectedIndex = 0;
+  Timer? _sliderTimer;
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: _currentPage);
-    _pageController.addListener(() {
-      int next = _pageController.page!.round();
-      if (_currentPage != next) {
-        setState(() {
-          _currentPage = next;
-        });
-      }
-    });
-
-    _timer = Timer.periodic(Duration(seconds: 10), (Timer timer) {
+    _sliderTimer = Timer.periodic(Duration(seconds: 10), (timer) {
       int nextPage = _currentPage + 1;
-      if (nextPage >= _numPages) {
+      if (nextPage >= 3) { // number of slides
         nextPage = 0;
       }
       _pageController.animateToPage(
@@ -48,391 +34,264 @@ class _DashboardState extends State<Dashboard> {
         duration: Duration(milliseconds: 500),
         curve: Curves.easeInOut,
       );
+      setState(() {
+        _currentPage = nextPage;
+      });
     });
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _sliderTimer?.cancel();
     _pageController.dispose();
     super.dispose();
   }
 
-  void _onItemTapped(int index) {
-    if (index == 0 || index == 1) {
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => EditableProfilePage()),
-      );
-    } else if (index == 2) {
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => SettingsPage(userName: userName)),
-      );
-    } else {
-      setState(() {
-        _selectedIndex = index;
-      });
-    }
-  }
-
-  final List<Widget> _contentPages = [
-    SizedBox.shrink(),
-  ];
-
-  Color _getIconColor() {
-    // Example logic: change icon color based on first letter of userName
-    if (userName.isNotEmpty) {
-      switch (userName[0].toLowerCase()) {
-        case 'a':
-        case 'b':
-        case 'c':
-          return Colors.red;
-        case 'd':
-        case 'e':
-        case 'f':
-          return Colors.green;
-        case 'g':
-        case 'h':
-        case 'i':
-          return Colors.blue;
-        default:
-          return Colors.black87;
-      }
-    }
-    return Colors.black87;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final iconColor = _getIconColor();
-
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Color.fromARGB(255, 224, 248, 255),
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(Icons.menu),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-        ),
-      ),
-      drawer: Drawer(
-        backgroundColor: Color.fromARGB(255, 224, 248, 255),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Optional: Add branding or logo at the top
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                child: Row(
-                  children: [
-                    const SizedBox(width: 16),
-                    CircleAvatar(
-                      radius: 24,
-                      backgroundColor: Colors.transparent,
-                      child: ClipOval(
-                        child: Image.asset(
-                          'assets/icons/app_logo.jpg',
-                          fit: BoxFit.cover,
-                          width: 48,
-                          height: 48,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      "Medhamatrics",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      icon: Icon(Icons.close, color: Colors.black87),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: ListView(
-                  children: [
-                    _drawerItem(Icons.home, "Home", iconColor, () {
-                      Navigator.of(context).pop();
-                      // Navigate to home or dashboard page
-                    }),
-                    _drawerItem(Icons.payment, "Payment", iconColor, () {
-                      Navigator.of(context).pop();
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => PaymentPage()),
-                      );
-                    }),
-                    // Removed Report menu item as requested
-                    _drawerItem(Icons.folder, "Download Certificates", iconColor, () {
-                      Navigator.of(context).pop();
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => CertificateDownloadPage()),
-                      );
-                      // Add navigation for Download Certificates page if exists
-                    }),
-                    _drawerItem(Icons.settings, "Settings", iconColor, () {
-                      Navigator.of(context).pop();
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => SettingsPage(userName: userName)),
-                      );
-                    }),
-                    //_drawerItem(Icons.login, "Login", iconColor, () {
-                    //  Navigator.of(context).pop();
-                    //  Navigator.of(context).push(
-                    //    MaterialPageRoute(builder: (context) => LoginPage()),
-                    //  );
-                    //}),
-                    //_drawerItem(Icons.app_registration, "Sign Up", iconColor, () {
-                    //  Navigator.of(context).pop();
-                    //  Navigator.of(context).push(
-                    //    MaterialPageRoute(builder: (context) => SignUpScreen()),
-                    //  );
-                    //}),
-                    //_drawerItem(Icons.password, "Password Recovery", iconColor, () {
-                    //  Navigator.of(context).pop();
-                    //  Navigator.of(context).push(
-                    //    MaterialPageRoute(builder: (context) => PasswordRecoveryScreen()),
-                    //  );
-                    //}),
-                    _drawerItem(Icons.logout, "Log Out", iconColor, () {
-                      Navigator.of(context).pop();
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: Text('Logout'),
-                          content: Text('Are you sure you want to logout?'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              child: Text('Cancel'),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                                // Implement logout logic: navigate to login screen and clear navigation stack
-                                Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-                              },
-                              child: Text('Logout'),
-                            ),
-                          ],
-                        ),
-                      );
-                      // Add logout functionality
-                    }),
-                  ],
-                ),
-              ),
-              const Divider(),
-              // User profile at the bottom
-              ListTile(
-                leading: CircleAvatar(
-                  radius: 18,
-                  backgroundImage: NetworkImage(
-                      "https://api.multiavatar.com/theresewebb.png"),
-                ),
-                title: Text(userName),
-                subtitle: Text("UK Researcher"),
-                onTap: () {},
-              ),
-              const SizedBox(height: 12),
-            ],
-          ),
-        ),
-      ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final height = constraints.maxHeight;
-          final width = constraints.maxWidth;
-
-          double h(double val) => height * val / 817; // base height from original design
-          double w(double val) => width * val / 400; // base width from original design
-
-          return SingleChildScrollView(
-            child: Stack(
+  // --------- DRAWER (HAMBURGER MENU) ------------
+  Widget _buildHamburgerDrawer(BuildContext context) {
+    return Drawer(
+      backgroundColor: Color(0xffe5faff),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 32.0, left: 20, bottom: 10),
+            child: Row(
               children: [
-                Container(
-                  height: height,
-                  width: width,
-                  color: const Color.fromARGB(255, 224, 248, 255),
-                  child: Column(
-                    children: [
-                      // Header Section
-                      _buildHeaderSection(h, w),
-
-                      // Navigation Indicators Row
-                      _buildNavigationIndicators(h, w),
-
-                      // Main Content Cards Row
-                      Expanded(
-                        child: Column(
-                          children: [
-                            _buildMainContentCards(h, w, context),
-                            SizedBox(height: h(2)),
-                            _buildBottomContentCards(h, w, context),
-                          ],
-                        ),
-                      ),
-                    ],
+                CircleAvatar(
+                  backgroundColor: Colors.white,
+                  child: Image.asset('assets/icons/app_logo.png', width: 28, height: 28),
+                ),
+                SizedBox(width: 12),
+                Text(
+                  'MedhaMatrix',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
                   ),
                 ),
-                // BottomNavigationBar from example positioned at bottom
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: SafeArea(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(24),  // set your desired radius
-                        topRight: Radius.circular(24),
-                      ),
-                      child: Theme(
-                        data: Theme.of(context).copyWith(canvasColor: Colors.white),
-                        child: BottomNavigationBar(
-                          elevation: 200,
-                          backgroundColor: const Color.fromARGB(249, 255, 255, 255),
-                          items: const <BottomNavigationBarItem>[
-                            BottomNavigationBarItem(
-                              label: "Home",
-                              icon: Icon(Icons.home),
-                            ),
-                            BottomNavigationBarItem(
-                              label: "Profile",
-                              icon: Icon(Icons.account_circle),
-                            ),
-                            BottomNavigationBarItem(
-                              label: "Settings",
-                              icon: Icon(Icons.settings),
-                            ),
-                          ],
-                          unselectedItemColor: Color.fromARGB(250, 57, 201, 245),
-                          currentIndex: _selectedIndex,
-                          selectedItemColor: Color.fromARGB(237, 6, 247, 179),
-                          onTap: _onItemTapped,
-                        ),
-                      ),
-                    ),
-                  ),
-                )
+                Spacer(),
+                IconButton(
+                  icon: Icon(Icons.close, color: Colors.black54),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
               ],
             ),
-          );
-        },
+          ),
+          Divider(),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.symmetric(horizontal: 8),
+              children: [
+                _buildDrawerItem(context, Icons.home, 'Home', onTap: () {
+                  Navigator.pop(context);
+                }),
+                _buildDrawerItem(context, Icons.payment, 'Payment', onTap: () {
+                  Navigator.pushNamed(context, '/payment');
+                }),
+                _buildDrawerItem(context, Icons.person, 'Download certificates', onTap: () {
+                  Navigator.pushNamed(context, '/certificate_download');
+                }),
+                _buildDrawerItem(context, Icons.settings, 'Settings', onTap: () {
+                  Navigator.pushNamed(context, '/settings');
+                }),
+                _buildDrawerItem(context, Icons.logout, 'Log Out', onTap: () {
+                  Navigator.pushNamed(context, '/login');
+                }),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 16, bottom: 24, top: 10),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: Color(0xffe4d6fa),
+                  radius: 18,
+                  child: Icon(Icons.person, color: Colors.grey[800]),
+                ),
+                SizedBox(width: 10),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Therese Webb',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    Text(
+                      'UK Researcher',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _drawerItem(IconData icon, String title, Color iconColor, VoidCallback onTap) {
+  Widget _buildDrawerItem(BuildContext context, IconData icon, String label, {VoidCallback? onTap}) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.07),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      margin: EdgeInsets.symmetric(vertical: 5),
       child: ListTile(
-        leading: Icon(icon, color: iconColor),
-        title: Text(title, style: TextStyle(fontSize: 16)),
+        leading: Icon(icon, color: Colors.black87),
+        title: Text(label, style: TextStyle(fontSize: 16, color: Colors.black87)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        tileColor: Colors.white,
         onTap: onTap,
       ),
     );
   }
 
-  Widget _buildHeaderSection(double Function(double) h, double Function(double) w) {
-    return Container(
-      height: h(270),
-      width: w(400),
-      color: Color.fromARGB(255, 224, 248, 255),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Expanded(
-            child: PageView.builder(
-              controller: _pageController,
-              itemCount: _numPages,
-              onPageChanged: (int page) {
-                setState(() {
-                  _currentPage = page;
-                });
-              },
-              itemBuilder: (context, index) {
-                final pageIndex = index % _numPages;
-                final colors = [Colors.blueAccent, Colors.green, Colors.orange];
-                final texts = ['Slide 1', 'Slide 2', 'Slide 3'];
-                return Container(
-                  margin: EdgeInsets.symmetric(horizontal: w(20)),
-                  decoration: BoxDecoration(
-                    color: colors[pageIndex],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Center(
-                    child: Text(
-                      texts[pageIndex],
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: h(24),
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                );
-              },
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double width = constraints.maxWidth;
+        double height = constraints.maxHeight;
+        bool isTablet = width > 700;
+        bool isWide = width > 1100;
+
+        // Responsive scaling
+        double h(double val) => height * val / 817;
+        double w(double val) => width * val / 400;
+
+        return Scaffold(
+          backgroundColor: const Color.fromARGB(255, 224, 248, 255),
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            title: Text(
+              'Dashboard',
+              style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
             ),
+            iconTheme: IconThemeData(color: Colors.black87),
           ),
-          SizedBox(height: h(10)),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(_numPages, (index) {
-              return GestureDetector(
-                onTap: () {
-                  _pageController.animateToPage(
-                    index,
-                    duration: Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                  );
-                },
-                child: AnimatedContainer(
-                  duration: Duration(milliseconds: 300),
-                  margin: EdgeInsets.symmetric(horizontal: w(6)),
-                  height: h(12),
-                  width: h(12),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _currentPage == index ? Colors.blueAccent : Colors.grey[300],
+          drawer: _buildHamburgerDrawer(context),
+          body: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: isWide ? 1000 : double.infinity),
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: isWide
+                          ? width * 0.10
+                          : isTablet
+                              ? width * 0.05
+                              : 0.0),
+                  child: Column(
+                    children: [
+                      SizedBox(height: h(isTablet ? 50 : 20)),
+                      // HEADER (slider and dots)
+                      _buildHeaderSection(h, w, isTablet),
+                      // QUICK NAV BAR
+                      SizedBox(height: 20),
+                      _buildNavigationIndicators(h, w, isTablet),
+                      // MAIN CONTENT CARDS (Responsive wrap/grid)
+                      SizedBox(height: h(22)),
+                      _buildMainContentCards(h, w, context, width, isTablet, isWide),
+                      // BOTTOM CONTENT (Responsive wrap/grid)
+                      SizedBox(height: h(12)),
+                      _buildBottomContentCards(h, w, context, width, isTablet),
+                      SizedBox(height: h(20)),
+                    ],
                   ),
                 ),
-              );
-            }),
+              ),
+            ),
           ),
-        ],
-      ),
+          // RESPONSIVE BOTTOM NAV BAR
+          bottomNavigationBar: _buildBottomNavigationBar(h, w, isTablet),
+        );
+      },
     );
   }
 
-  Widget _buildNavigationIndicators(double Function(double) h, double Function(double) w) {
-    final indicatorCount = 4;
-final indicatorSize = w(40);
+  // --------- HEADER (SLIDER + DOTS) -------------
+  Widget _buildHeaderSection(double Function(double) h, double Function(double) w, bool isTablet) {
+    final List<String> sliderImages = [
+      'assets/images/slider1.png',
+      'assets/images/slider2.jpg',
+      'assets/Illustration.png',
+    ];
+    double pad = isTablet ? h(24) : h(15);
 
-    // List of image paths for each indicator
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SizedBox(
+          height: isTablet ? h(180) : h(140),
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: sliderImages.length,
+            onPageChanged: (index) {
+              setState(() {
+                _currentPage = index;
+              });
+            },
+            itemBuilder: (context, index) {
+              return Container(
+                margin: EdgeInsets.symmetric(horizontal: w(10)),
+                padding: EdgeInsets.all(pad),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(h(16)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Image.asset(
+                    sliderImages[index],
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        SizedBox(height: h(10)),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(sliderImages.length, (index) {
+            return Container(
+              width: _currentPage == index ? w(14) : w(8),
+              height: _currentPage == index ? w(14) : w(8),
+              margin: EdgeInsets.symmetric(horizontal: w(4)),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _currentPage == index ? Colors.blue : Colors.grey[400],
+              ),
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
+  // --------- QUICK NAVIGATION ----------
+  Widget _buildNavigationIndicators(double Function(double) h, double Function(double) w, bool isTablet) {
+    final indicatorCount = 4;
+    final indicatorSize = isTablet ? w(54) : w(42);
+
     final List<String> imagePaths = [
       'assets/icons/IQ_test.png',
       'assets/icons/student_counseling.png',
       'assets/icons/parent_counseling.png',
       'assets/icons/our_team.png',
     ];
-
-    // Text labels for each indicator as two lines
     final List<List<String>> labels = [
       ['IQ', 'TEST'],
       ['Student', 'Counseling'],
@@ -440,336 +299,316 @@ final indicatorSize = w(40);
       ['Our', 'Team'],
     ];
 
-    return Container(
-      margin: EdgeInsets.only(top: h(11), left: w(21), right: w(21)),
-      height: h(95),
-      width: double.infinity,
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: isTablet ? 0 : w(12), vertical: 0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisAlignment:
+            isTablet ? MainAxisAlignment.center : MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: List.generate(indicatorCount, (index) {
-          return Flexible(
-            child: GestureDetector(
+            return GestureDetector(
               onTap: () {
                 switch (index) {
                   case 0:
-                    Navigator.of(context).pushNamed('/test');
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => TestSelectionPage(),
+                      ),
+                    );
                     break;
                   case 1:
-                    Navigator.of(context).pushNamed('/counselling');
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => CounselingSelectionPage(
+                          openStudentCounselingDialogOnLoad: true,
+                        ),
+                      ),
+                    );
                     break;
                   case 2:
-                    Navigator.of(context).pushNamed('/parent_counselling');
+                        Navigator.of(context).pushNamed('/counselling');
                     break;
                   case 3:
-                    Navigator.of(context).pushNamed('/team');
+                    Navigator.of(context).pushNamed('/our_team');
                     break;
                 }
               },
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
-                    width: indicatorSize,
-                    height: indicatorSize,
-                    child: _buildNavigationIndicator(indicatorSize, imagePaths[index], false),
-                  ),
-                  SizedBox(height: h(4)),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          labels[index][0],
-                          style: TextStyle(
-                            fontSize: w(10),
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                            fontFamily: 'Roboto',
-                          ),
-                        ),
-                        Text(
-                          labels[index][1],
-                          style: TextStyle(
-                            fontSize: w(10),
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          fontFamily: 'Roboto',
+              child: Container(
+                margin:
+                    EdgeInsets.symmetric(horizontal: isTablet ? 20 : 0, vertical: 0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircleAvatar(
+                      radius: indicatorSize,
+                      backgroundColor: Colors.white,
+                      child: Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Image.asset(
+                          imagePaths[index],
+                          fit: BoxFit.contain,
                         ),
                       ),
-                      ],
                     ),
-                  ),
-                ],
+                    SizedBox(height: 6),
+                    Text(
+                      labels[index][0],
+                      style: TextStyle(
+                        fontSize: isTablet ? 13 : 10,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    Text(
+                      labels[index][1],
+                      style: TextStyle(
+                        fontSize: isTablet ? 13 : 10,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
+            );
         }),
       ),
     );
   }
 
-  Widget _buildNavigationIndicator(double size, String imagePath, bool isSelected) {
-    return Container(
-      height: size,
-      width: size,
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 255, 255, 255),
-        borderRadius: BorderRadius.circular(size / 2),
-        boxShadow: [
-          BoxShadow(
-            color: const Color.fromARGB(66, 70, 69, 69),
-            blurRadius: 6,
-            offset: Offset(0, 3),
-          ),
-        ],
-        border: null,
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(size / 2),
-        child: Image.asset(
-          imagePath,
-          fit: BoxFit.cover,
-          width: size,
-          height: size,
-        ),
-      ),
-    );
-  }
+  // --------- MAIN CARDS (responsive grid/wrap) ---------
+  Widget _buildMainContentCards(double Function(double) h, double Function(double) w, BuildContext context, double width, bool isTablet, bool isWide) {
+    double spacing = isTablet ? 24 : 16;
+    double cardWidth = (width - spacing * 3) / 2;
+    double smallCardHeight = isTablet ? 110 : 90;
 
-  Widget _buildMainContentCards(double Function(double) h, double Function(double) w, BuildContext context) {
-    return Container(
-      margin: EdgeInsets.only(top: h(20), left: w(21), right: w(21)),
-      height: h(229),
-      width: w(371),
-      child: Row(
-        children: [
-          // Large Gradient Card
-          Expanded(
-            flex: 1,
-            child: GestureDetector(
-              onTap: () {
-                Navigator.of(context).pushNamed('/test');
-              },
-              child: Container(
-                height: h(229),
-decoration: BoxDecoration(
-  borderRadius: BorderRadius.circular(h(18)),
-  color: Colors.white,
-  boxShadow: [
-    BoxShadow(
-      color: Colors.black54,
-      offset: Offset(0, 4),
-      blurRadius: 10,
-    ),
-  ],
-),
-child: Stack(
-  children: [
-Positioned(
-  top: 38,
-  left: 0,
-  right: 0,
-  child: Text(
-    'Test',
-    style: TextStyle(
-      color: Colors.black87,
-      fontSize: h(26),
-      fontWeight: FontWeight.w600,
-      fontFamily: 'Montserrat',
-    ),
-    textAlign: TextAlign.center,
-  ),
-),
-Positioned(
-  bottom: 8,
-  right: 8,
-  child: Image.asset(
-    'assets/icons/test_gif.gif',
-    fit: BoxFit.contain,
-    height: 120,
-  ),
-),
-  ],
-),
-              ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        GestureDetector(
+          onTap: () => Navigator.of(context).pushNamed('/test'),
+          child: Container(
+            width: cardWidth,
+            height: isTablet ? 220 : 180,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 12,
+                  offset: Offset(0, 4),
+                ),
+              ],
             ),
-          ),
-          SizedBox(width: w(20)),
-          // Right Column Cards
-          Expanded(
-            flex: 1,
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).pushNamed('/counselling');
-                  },
-                  child: Container(
-                    height: h(101),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(h(18)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black54,
-                          offset: Offset(0, 4),
-                          blurRadius: 10,
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                        child: Text(
-                          'Counseling',
-                          style: TextStyle(
-                            color: Colors.black87,
-                            fontSize: h(22),
-                            fontWeight: FontWeight.w600,
-                            fontFamily: 'Montserrat',
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                    ),
+                Text(
+                  'Test',
+                  style: TextStyle(
+                    fontSize: isTablet ? 24 : 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
                   ),
                 ),
-                SizedBox(height: h(24)),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).pushNamed('/payment_history');
-                  },
-                  child: Container(
-                    height: h(101),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(h(18)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black54,
-                          offset: Offset(0, 4),
-                          blurRadius: 10,
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                        child: Text(
-                          'Gallery',
-                          style: TextStyle(
-                            color: Colors.black87,
-                            fontSize: h(22),
-                            fontWeight: FontWeight.w600,
-                            fontFamily: 'Montserrat',
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                    ),
-                  ),
+                SizedBox(height: isTablet ? 20 : 12),
+                Image.asset(
+                  'assets/icons/test_gif.gif',
+                  height: isTablet ? 100 : 80,
+                  fit: BoxFit.contain,
                 ),
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBottomContentCards(double Function(double) h, double Function(double) w, BuildContext context) {
-    return Container(
-      margin: EdgeInsets.only(top: h(20), left: w(21), right: w(21)),
-      height: h(101),
-      width: w(366),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () {
-              Navigator.of(context).pushNamed('/offers');
-            },
-            child: Container(
-              height: h(101),
-              width: w(170), // Change width to match About Us box width
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(h(18)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black54,
-                    offset: Offset(0, 4),
-                    blurRadius: 10,
-                  ),
-                ],
-              ),
-              child: Center(
-                  child: Text(
-                    'Offers',
-                    style: TextStyle(
-                      color: Colors.black87,
-                      fontSize: h(22),
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'Montserrat',
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-              ),
-            ),
-          ),
-          SizedBox(width: w(20)),
-          GestureDetector(
-            onTap: () {
-              Navigator.of(context).pushNamed('/about');
-            },
-            child: Container(
-              height: h(101),
-              width: w(166), // Change width to match Counseling and bottom content box width
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(h(18)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black54,
-                    offset: Offset(0, 4),
-                    blurRadius: 10,
-                  ),
-                ],
-              ),
-              child: Center(
-                  child: Text(
-                    'About Us',
-                    style: TextStyle(
-                      color: Colors.black87,
-                      fontSize: h(22),
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'Montserrat',
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBottomNavigationBar(double Function(double) h, double Function(double) w) {
-    return SizedBox.shrink();
-  }
-
-  Widget _buildBottomNavigationItem(double size, String imagePath) {
-    return Container(
-      height: size,
-      width: size,
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(size / 2),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(size / 2),
-        child: Image.asset(
-          imagePath,
-          fit: BoxFit.cover,
-          width: size,
-          height: size,
         ),
-      ),
+        SizedBox(width: spacing),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            GestureDetector(
+              onTap: () => Navigator.of(context).pushNamed('/counselling'),
+              child: Container(
+                width: cardWidth,
+                height: smallCardHeight,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 12,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Text(
+                    'Counseling',
+                    style: TextStyle(
+                      fontSize: isTablet ? 20 : 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: spacing),
+            GestureDetector(
+              onTap: () => Navigator.of(context).pushNamed('/payment_history'),
+              child: Container(
+                width: cardWidth,
+                height: smallCardHeight,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 12,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Text(
+                    'Gallery',
+                    style: TextStyle(
+                      fontSize: isTablet ? 20 : 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBottomContentCards(double Function(double) h, double Function(double) w, BuildContext context, double width, bool isTablet) {
+    double spacing = isTablet ? 24 : 16;
+    double cardWidth = (width - spacing * 3) / 2;
+    double cardHeight = isTablet ? 110 : 90;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        GestureDetector(
+          onTap: () => Navigator.of(context).pushNamed('/offers'),
+          child: Container(
+            width: cardWidth,
+            height: cardHeight,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 12,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Text(
+                'Offers',
+                style: TextStyle(
+                  fontSize: isTablet ? 20 : 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+          ),
+        ),
+        SizedBox(width: spacing),
+        GestureDetector(
+          onTap: () => Navigator.of(context).pushNamed('/about'),
+          child: Container(
+            width: cardWidth,
+            height: cardHeight,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 12,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Text(
+                'About Us',
+                style: TextStyle(
+                  fontSize: isTablet ? 20 : 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // --------- RESPONSIVE BOTTOM NAV BAR -----------
+  Widget _buildBottomNavigationBar(double Function(double) h, double Function(double) w, bool isTablet) {
+    final List<IconData> icons = [
+      Icons.home,
+      Icons.person,
+      Icons.settings,
+    ];
+
+    final List<String> labels = [
+      'Home',
+      'Profile',
+      'Setting',
+    ];
+
+    return BottomNavigationBar(
+      currentIndex: _selectedIndex,
+      selectedItemColor: Colors.teal,
+      unselectedItemColor: Colors.grey,
+      backgroundColor: Color.fromARGB(255, 224, 248, 255),
+      selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold),
+      unselectedLabelStyle: TextStyle(fontWeight: FontWeight.normal),
+      type: BottomNavigationBarType.fixed,
+      onTap: (index) async {
+        if (index == 2) {
+          setState(() {
+            _selectedIndex = index;
+          });
+          await Navigator.of(context).pushNamed('/settings');
+          setState(() {
+            _selectedIndex = 0; // Reset to home on return
+          });
+        } else {
+          setState(() {
+            _selectedIndex = index;
+          });
+          switch (index) {
+            case 0:
+              Navigator.of(context).pushNamed('/home');
+              break;
+            case 1:
+              Navigator.of(context).pushNamed('/profile');
+              break;
+          }
+        }
+      },
+      items: List.generate(labels.length, (index) {
+        return BottomNavigationBarItem(
+          icon: Icon(icons[index]),
+          label: labels[index],
+        );
+      }),
     );
   }
 }

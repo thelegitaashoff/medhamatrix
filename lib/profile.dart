@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:medhamatrix/l10n/app_localizations.dart';
 import 'dashboard.dart';
+import 'settings.dart';
+import 'services/user_service.dart';
 
 class EditableProfilePage extends StatefulWidget {
   final bool startEditing;
@@ -12,14 +15,15 @@ class EditableProfilePage extends StatefulWidget {
 
 class _EditableProfilePageState extends State<EditableProfilePage> {
   bool isEditing = false;
+  bool _isLoading = false;
 
-  // Profile data
-  String name = 'Emily Clark';
-  int age = 24;
-  String birthday = '08/12/2000';
-  String school = 'Maplewood High School';
-  String email = 'emily.clark@email.com';
-  String phone = '+1 234 567 8910';
+  // Profile data - will be loaded from UserService
+  String name = '';
+  int age = 0;
+  String birthday = '';
+  String school = '';
+  String email = '';
+  String phone = '';
 
   // Controllers for editing
   final nameController = TextEditingController();
@@ -32,8 +36,89 @@ class _EditableProfilePageState extends State<EditableProfilePage> {
   @override
   void initState() {
     super.initState();
+    _loadProfileData();
     if (widget.startEditing) {
       _startEditing();
+    }
+  }
+  
+  // Load profile data from UserService
+  Future<void> _loadProfileData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    print('Loading profile data...');
+    
+    // Initialize UserService first
+    await UserService.initialize();
+    
+    // Check if we have an auth token
+    final token = UserService.authToken;
+    print('Auth token available: ${token != null ? 'Yes' : 'No'}');
+    
+    if (token != null && token.isNotEmpty) {
+      try {
+        // Try to fetch fresh data from API first
+        print('Attempting to fetch profile from API...');
+        final success = await UserService.fetchUserProfileFromAPI();
+        print('API fetch result: $success');
+        
+        if (!success) {
+          print('API fetch failed, showing message to user');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to load latest profile data from server. Showing cached data.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+      } catch (e) {
+        print('Failed to fetch from API: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading profile: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } else {
+      print('No auth token available, using cached data');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No authentication token found. Please login again.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    }
+    
+    // Load current user data (from cache or API)
+    final user = UserService.currentUser;
+    print('Current user data: ${user?.toJson()}');
+    
+    if (user != null) {
+      setState(() {
+        name = user.fullName;
+        age = user.age;
+        birthday = user.birthday;
+        school = user.school;
+        email = user.email;
+        phone = user.phone;
+        _isLoading = false;
+      });
+      print('Profile data loaded: $name, $email');
+    } else {
+      print('No user data available');
+      setState(() {
+        // Set default values if no user data
+        name = 'User';
+        age = 0;
+        birthday = '';
+        school = '';
+        email = '';
+        phone = '';
+        _isLoading = false;
+      });
     }
   }
 
@@ -66,20 +151,73 @@ class _EditableProfilePageState extends State<EditableProfilePage> {
     });
   }
 
-  void _saveProfile() {
+  Future<void> _saveProfile() async {
     setState(() {
-      name = nameController.text;
-      age = int.tryParse(ageController.text) ?? age;
-      birthday = birthdayController.text;
-      school = schoolController.text;
-      email = emailController.text;
-      phone = phoneController.text;
-      isEditing = false;
+      _isLoading = true;
     });
+
+    try {
+      // Update via API first
+      final success = await UserService.updateUserProfileToAPI(
+        fullName: nameController.text.trim(),
+        age: int.tryParse(ageController.text),
+        birthday: birthdayController.text.trim(),
+        school: schoolController.text.trim(),
+        email: emailController.text.trim(),
+        phone: phoneController.text.trim(),
+      );
+
+      if (success) {
+        // Update local state
+        setState(() {
+          name = nameController.text;
+          age = int.tryParse(ageController.text) ?? age;
+          birthday = birthdayController.text;
+          school = schoolController.text;
+          email = emailController.text;
+          phone = phoneController.text;
+          isEditing = false;
+          _isLoading = false;
+        });
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Profile updated successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update profile. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error updating profile: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -119,39 +257,47 @@ class _EditableProfilePageState extends State<EditableProfilePage> {
                 ),
                 SizedBox(height: 24),
                 _ProfileFieldBox(
-                  label: "Name",
+                  label: localizations.name,
                   value: name,
                   isEditing: isEditing,
                   controller: nameController,
                 ),
+                // Username field showing the full name (read-only)
                 _ProfileFieldBox(
-                  label: "Age",
+                  label: "Username",
+                  value: name, // Username automatically updates with name
+                  isEditing: false, // Always read-only
+                  controller: TextEditingController(text: name), // Controller with current name
+                  isReadOnly: true,
+                ),
+                _ProfileFieldBox(
+                  label: localizations.age,
                   value: age.toString(),
                   isEditing: isEditing,
                   controller: ageController,
                   type: TextInputType.number,
                 ),
                 _ProfileFieldBox(
-                  label: "Birthday",
+                  label: localizations.birthday,
                   value: birthday,
                   isEditing: isEditing,
                   controller: birthdayController,
                 ),
                 _ProfileFieldBox(
-                  label: "School",
+                  label: localizations.school,
                   value: school,
                   isEditing: isEditing,
                   controller: schoolController,
                 ),
                 _ProfileFieldBox(
-                  label: "Email",
+                  label: localizations.email,
                   value: email,
                   isEditing: isEditing,
                   controller: emailController,
                   type: TextInputType.emailAddress,
                 ),
                 _ProfileFieldBox(
-                  label: "Phone",
+                  label: localizations.phone,
                   value: phone,
                   isEditing: isEditing,
                   controller: phoneController,
@@ -164,7 +310,7 @@ class _EditableProfilePageState extends State<EditableProfilePage> {
                         children: [
                           ElevatedButton(
                             onPressed: _saveProfile,
-                            child: Text('Save', style: TextStyle(color: Colors.white)),
+                            child: Text(localizations.save, style: TextStyle(color: Colors.white)),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Color.fromARGB(250, 57, 201, 245),
                               shape: RoundedRectangleBorder(
@@ -176,7 +322,7 @@ class _EditableProfilePageState extends State<EditableProfilePage> {
                           SizedBox(width: 10),
                           ElevatedButton(
                             onPressed: _cancelEditing,
-                            child: Text('Cancel', style: TextStyle(color: Colors.white)),
+                            child: Text(localizations.cancel, style: TextStyle(color: Colors.white)),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Color.fromARGB(250, 57, 201, 245),
                               shape: RoundedRectangleBorder(
@@ -192,7 +338,7 @@ class _EditableProfilePageState extends State<EditableProfilePage> {
                         children: [
                           ElevatedButton(
                             onPressed: _startEditing,
-                            child: Text('Edit Profile', style: TextStyle(color: Colors.white)),
+                            child: Text(localizations.editProfile, style: TextStyle(color: Colors.white)),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Color.fromARGB(250, 57, 201, 245),
                               shape: RoundedRectangleBorder(
@@ -218,6 +364,7 @@ class _ProfileFieldBox extends StatelessWidget {
   final bool isEditing;
   final TextEditingController controller;
   final TextInputType type;
+  final bool isReadOnly;
 
   const _ProfileFieldBox({
     required this.label,
@@ -225,16 +372,21 @@ class _ProfileFieldBox extends StatelessWidget {
     required this.isEditing,
     required this.controller,
     this.type = TextInputType.text,
+    this.isReadOnly = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Special styling for read-only username field
+    bool isUsernameField = label == "Username" && isReadOnly;
+    
     return Container(
       margin: EdgeInsets.symmetric(vertical: 7),
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: isUsernameField ? Colors.blue[50] : Colors.grey[50],
         borderRadius: BorderRadius.circular(8),
+        border: isUsernameField ? Border.all(color: Color.fromARGB(250, 57, 201, 245), width: 1.5) : null,
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.12),
@@ -243,7 +395,7 @@ class _ProfileFieldBox extends StatelessWidget {
           ),
         ],
       ),
-      child: isEditing
+      child: (isEditing && !isReadOnly)
           ? TextFormField(
               controller: controller,
               keyboardType: type,
@@ -256,15 +408,27 @@ class _ProfileFieldBox extends StatelessWidget {
               children: [
                 Text(
                   '$label: ',
-                  style: TextStyle(fontWeight: FontWeight.w600, color: Colors.black87),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600, 
+                    color: isUsernameField ? Color.fromARGB(250, 57, 201, 245) : Colors.black87
+                  ),
                 ),
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     value,
-                    style: TextStyle(color: Colors.black87),
+                    style: TextStyle(
+                      color: isUsernameField ? Color.fromARGB(250, 57, 201, 245) : Colors.black87,
+                      fontWeight: isUsernameField ? FontWeight.w600 : FontWeight.normal,
+                    ),
                   ),
                 ),
+                if (isUsernameField)
+                  Icon(
+                    Icons.person_outline,
+                    color: Color.fromARGB(250, 57, 201, 245),
+                    size: 20,
+                  ),
               ],
             ),
     );

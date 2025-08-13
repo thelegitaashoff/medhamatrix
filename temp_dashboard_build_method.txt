@@ -1,0 +1,183 @@
+Widget build(BuildContext context) {
+    final iconColor = _getIconColor();
+
+    return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 224, 248, 255),
+      appBar: AppBar(
+        backgroundColor: Color.fromARGB(255, 224, 248, 255),
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: Icon(Icons.menu),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
+      ),
+      drawer: Drawer(
+        backgroundColor: Color.fromARGB(255, 224, 248, 255),
+        child: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: Row(
+                  children: [
+                    const SizedBox(width: 16),
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundColor: Colors.transparent,
+                      child: ClipOval(
+                        child: Image.asset(
+                          'assets/icons/app_logo.jpg',
+                          fit: BoxFit.cover,
+                          width: 48,
+                          height: 48,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      "Medhamatrics",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: Icon(Icons.close, color: Colors.black87),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: ListView(
+                  children: [
+                    _drawerItem(Icons.home, "Home", iconColor, () {
+                      Navigator.of(context).pop();
+                    }),
+                    _drawerItem(Icons.payment, "Payment", iconColor, () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) => PaymentPage()),
+                      );
+                    }),
+                    _drawerItem(Icons.folder, "Download Certificates", iconColor, () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) => CertificateDownloadPage()),
+                      );
+                    }),
+                    _drawerItem(Icons.settings, "Settings", iconColor, () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) => SettingsPage(userName: userName)),
+                      );
+                    }),
+                    _drawerItem(Icons.logout, "Log Out", iconColor, () {
+                      Navigator.of(context).pop();
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Text('Logout'),
+                          content: Text('Are you sure you want to logout?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+                              },
+                              child: Text('Logout'),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),
+              const Divider(),
+              ListTile(
+                leading: CircleAvatar(
+                  radius: 18,
+                  backgroundImage: NetworkImage(
+                      "https://api.multiavatar.com/theresewebb.png"),
+                ),
+                title: Text(userName),
+                subtitle: Text("UK Researcher"),
+                onTap: () {},
+              ),
+              const SizedBox(height: 12),
+            ],
+          ),
+        ),
+      ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final height = constraints.maxHeight;
+          final width = constraints.maxWidth;
+
+          double h(double val) => height * val / 817;
+          double w(double val) => width * val / 400;
+
+          // Define breakpoints for responsiveness
+          bool isMobile = width < 600;
+          bool isTablet = width >= 600 && width < 900;
+          bool isDesktop = width >= 900;
+
+          return SingleChildScrollView(
+            child: Container(
+              width: width,
+              color: const Color.fromARGB(255, 224, 248, 255),
+              child: Column(
+                children: [
+                  _buildHeaderSection(h, w),
+                  _buildNavigationIndicatorsResponsive(h, w, isMobile, isTablet, isDesktop),
+                  _buildMainContentCardsResponsive(h, w, context, isMobile, isTablet, isDesktop),
+                  SizedBox(height: h(2)),
+                  _buildBottomContentCardsResponsive(h, w, context, isMobile, isTablet, isDesktop),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+      bottomNavigationBar: SafeArea(
+        child: ClipRRect(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+          child: Theme(
+            data: Theme.of(context).copyWith(canvasColor: Colors.white),
+            child: BottomNavigationBar(
+              elevation: 200,
+              backgroundColor: const Color.fromARGB(249, 255, 255, 255),
+              items: const <BottomNavigationBarItem>[
+                BottomNavigationBarItem(
+                  label: "Home",
+                  icon: Icon(Icons.home),
+                ),
+                BottomNavigationBarItem(
+                  label: "Profile",
+                  icon: Icon(Icons.account_circle),
+                ),
+                BottomNavigationBarItem(
+                  label: "Settings",
+                  icon: Icon(Icons.settings),
+                ),
+              ],
+              unselectedItemColor: Color.fromARGB(250, 57, 201, 245),
+              currentIndex: _selectedIndex,
+              selectedItemColor: Color.fromARGB(237, 6, 247, 179),
+              onTap: _onItemTapped,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
