@@ -29,7 +29,7 @@ class _DashboardState extends State<Dashboard> {
     },
     {
       'title': 'Track your assessments',
-      'subtitle': 'Start with IQ tests and explore emotional wellness tools.',
+      'subtitle': 'Start with MMCT and explore emotional wellness tools.',
     },
     {
       'title': 'Build student confidence',
@@ -173,7 +173,7 @@ class _DashboardState extends State<Dashboard> {
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
                 children: [
-                  _quickAccess(Icons.psychology_outlined, 'IQ Test', () => Navigator.pushNamed(context, '/test')),
+                  _quickAccess(Icons.psychology_outlined, 'MMCT', () => Navigator.pushNamed(context, '/test')),
                   _quickAccess(Icons.school_outlined, 'Student Counseling', () => Navigator.pushNamed(context, '/counselling')),
                   _quickAccess(Icons.family_restroom_outlined, 'Parent Counseling', () => Navigator.pushNamed(context, '/counselling')),
                   _quickAccess(Icons.groups_2_outlined, 'Our Team', () => Navigator.pushNamed(context, '/our_team')),
@@ -204,7 +204,7 @@ class _DashboardState extends State<Dashboard> {
                 crossAxisSpacing: 14,
                 mainAxisSpacing: 14,
                 children: [
-                  _serviceCard(context, Icons.lightbulb_outline_rounded, 'IQ Test', 'Start your assessment with guided steps.', const Color(0xFFADF1E7), () => Navigator.pushNamed(context, '/test')),
+                  _serviceCard(context, Icons.lightbulb_outline_rounded, 'MMCT', 'Start your assessment with guided steps.', const Color(0xFFADF1E7), () => Navigator.pushNamed(context, '/test')),
                   _serviceCard(context, Icons.video_call_outlined, 'Counseling', 'Connect with mentors for student and parent support.', const Color(0xFFD9E9FF), () => Navigator.pushNamed(context, '/counselling')),
                   _serviceCard(context, Icons.image_outlined, 'Gallery', 'Access activity history and recent uploads.', const Color(0xFFDDF0ED), () => Navigator.pushNamed(context, '/payment_history')),
                   _serviceCard(context, Icons.local_offer_outlined, 'Offers', 'Check plans and discounts currently available.', const Color(0xFFF0F4EF), () => Navigator.pushNamed(context, '/offers')),

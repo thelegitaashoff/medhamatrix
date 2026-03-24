@@ -27,7 +27,7 @@ class _AboutUsMedhaMatrixPageState extends State<AboutUsMedhaMatrixPage> {
     },
     {
       'title': 'Programs & Benefits',
-      'content': 'IQ assessments, detailed reports, expert counseling, parent support, and teacher development programs designed around real student needs.',
+      'content': 'MMCT assessments, detailed reports, expert counseling, parent support, and teacher development programs designed around real student needs.',
       'icon': Icons.verified_outlined,
     },
     {

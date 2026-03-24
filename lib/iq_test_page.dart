@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'medha_ui.dart';
+import 'profile.dart';
 import 'services/api_service.dart';
 import 'services/certificate_service.dart';
 import 'services/user_service.dart';
@@ -45,10 +46,24 @@ class _IqTestPageState extends State<IqTestPage> {
       await UserService.loadAuthToken();
       await UserService.loadUserFromStorage();
       _authToken = UserService.authToken;
+      if (_authToken != null && _authToken!.isNotEmpty) {
+        await UserService.fetchUserProfileFromAPI();
+      }
 
       if (_authToken == null || _authToken!.isEmpty) {
         setState(() {
-          _errorMessage = 'Please login first. IQ Test requires your account token.';
+          _errorMessage = 'Please login first. MMCT requires your account token.';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final user = UserService.currentUser;
+      final hasSchool = user != null && user.schoolId != null && user.school.trim().isNotEmpty;
+
+      if (!hasSchool) {
+        setState(() {
+          _errorMessage = 'Please complete your profile by selecting your school name before taking the MMCT.';
           _isLoading = false;
         });
         return;
@@ -62,14 +77,14 @@ class _IqTestPageState extends State<IqTestPage> {
       setState(() {
         _questions = parsedQuestions;
         _errorMessage = response.success
-            ? (parsedQuestions.isEmpty ? 'No IQ questions were returned by the server.' : null)
-            : (response.message.isNotEmpty ? response.message : 'Failed to load IQ test questions.');
+            ? (parsedQuestions.isEmpty ? 'No MMCT questions were returned by the server.' : null)
+            : (response.message.isNotEmpty ? response.message : 'Failed to load MMCT questions.');
         _isLoading = false;
       });
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _errorMessage = 'Failed to load IQ test questions: $e';
+        _errorMessage = 'Failed to load MMCT questions: $e';
         _isLoading = false;
       });
     }
@@ -166,10 +181,10 @@ class _IqTestPageState extends State<IqTestPage> {
 
     final iqScore = response.data?['your IQ'];
     final message = response.success
-        ? 'Your test has been submitted.'
+        ? 'Your MMCT has been submitted.'
         : (response.message.isNotEmpty
             ? response.message
-            : 'Failed to submit IQ test.');
+            : 'Failed to submit MMCT.');
 
     if (response.success && iqScore != null) {
       await CertificateService.saveLatestIqCertificate(
@@ -223,7 +238,7 @@ class _IqTestPageState extends State<IqTestPage> {
                     ),
                     children: [
                       const TextSpan(
-                        text: 'IQ Score: ',
+                        text: 'MMCI: ',
                         style: TextStyle(fontWeight: FontWeight.w700),
                       ),
                       TextSpan(
@@ -258,7 +273,7 @@ class _IqTestPageState extends State<IqTestPage> {
   Widget build(BuildContext context) {
     return MedhaScaffold(
       appBar: const MedhaTopBar(
-        title: 'IQ Test',
+        title: 'MMCT',
         subtitle: 'Answer every question and submit your response',
       ),
       child: MedhaPageView(
@@ -300,7 +315,7 @@ class _IqTestPageState extends State<IqTestPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Unable to load IQ test',
+                    'Unable to load MMCT',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
@@ -317,11 +332,26 @@ class _IqTestPageState extends State<IqTestPage> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  MedhaPrimaryButton(
-                    label: 'Retry',
-                    onPressed: _loadQuestions,
-                    icon: Icons.refresh_rounded,
-                  ),
+                  if (_errorMessage!.contains('school name')) ...[
+                    MedhaPrimaryButton(
+                      label: 'Complete Profile',
+                      onPressed: () async {
+                        await Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const EditableProfilePage(startEditing: true),
+                          ),
+                        );
+                        if (!mounted) return;
+                        _loadQuestions();
+                      },
+                      icon: Icons.person_rounded,
+                    ),
+                  ] else
+                    MedhaPrimaryButton(
+                      label: 'Retry',
+                      onPressed: _loadQuestions,
+                      icon: Icons.refresh_rounded,
+                    ),
                 ],
               ),
             )

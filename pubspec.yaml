@@ -17,12 +17,9 @@ dependencies:
   flutter_screenutil: ^5.5.4+2
   intl: ^0.20.2
   animate_do: ^4.2.0
-  test: ^1.25.15
-  flutter_launcher_icons: ^0.14.4
   video_player: ^2.7.0 # (Check for latest version)
   flutter_localizations:
     sdk: flutter
-  flutter_localization: ^0.3.3
   url_launcher: ^6.3.2
   http: ^0.13.4
   shared_preferences: ^2.5.3
@@ -37,6 +34,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
 
 flutter_launcher_icons:
   android: true

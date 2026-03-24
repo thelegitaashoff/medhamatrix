@@ -42,7 +42,7 @@ class _CertificateDownloadPageState extends State<CertificateDownloadPage> {
   void _showPendingMessage() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Complete and submit your IQ test to generate your certificate.'),
+        content: Text('Complete and submit your MMCT to generate your certificate.'),
       ),
     );
   }
@@ -132,7 +132,7 @@ class _CertificateDownloadPageState extends State<CertificateDownloadPage> {
         children: [
           const MedhaHeroCard(
             title: 'Certificate Center',
-            subtitle: 'Your IQ test certificate appears here after successful submission.',
+            subtitle: 'Your MMCT certificate appears here after successful submission.',
           ),
           const SizedBox(height: 18),
           MedhaCard(
@@ -147,7 +147,7 @@ class _CertificateDownloadPageState extends State<CertificateDownloadPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'IQ Assessment Certificate',
+                        'MMCT Certificate',
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w800,
@@ -157,8 +157,8 @@ class _CertificateDownloadPageState extends State<CertificateDownloadPage> {
                       const SizedBox(height: 8),
                       Text(
                         _certificate == null
-                            ? 'Submit your IQ test to unlock a personalized certificate with your name and result.'
-                            : 'Certificate generated for $studentName with IQ score ${_certificate!.score}.',
+                            ? 'Submit your MMCT to unlock a personalized certificate with your name and result.'
+                            : 'Certificate generated for $studentName with MMCI ${_certificate!.score}.',
                         style: const TextStyle(
                           fontSize: 14,
                           height: 1.45,
@@ -250,7 +250,7 @@ class _CertificateDownloadPageState extends State<CertificateDownloadPage> {
                       const SizedBox(height: 18),
                       MedhaPrimaryButton(
                         label: _certificate == null
-                            ? 'Take IQ Test First'
+                            ? 'Take MMCT First'
                             : (_isDownloading ? 'Downloading...' : 'Download Certificate'),
                         icon: _certificate == null
                             ? Icons.psychology_outlined
@@ -277,7 +277,7 @@ class _CertificateDownloadPageState extends State<CertificateDownloadPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Latest Result',
+                          'Latest MMCI',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
@@ -286,7 +286,7 @@ class _CertificateDownloadPageState extends State<CertificateDownloadPage> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '$studentName completed the IQ assessment on $formattedDate with score ${_certificate!.score}.',
+                          '$studentName completed the MMCT on $formattedDate with MMCI ${_certificate!.score}.',
                           style: const TextStyle(
                             fontSize: 14,
                             height: 1.4,
