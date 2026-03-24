@@ -1,42 +1,53 @@
-import 'package:flutter/material.dart';
-import 'counselling.dart';
-import 'booking_section_page.dart';
- import 'profile.dart';
-import 'settings.dart';
-import 'test.dart';
 import 'dart:async';
 
+import 'package:flutter/material.dart';
+import 'certificate_download.dart';
+import 'counselling.dart';
+import 'help_support.dart';
+import 'medha_ui.dart';
+import 'payment.dart';
+import 'profile.dart';
+import 'settings.dart';
+
 class Dashboard extends StatefulWidget {
-  const Dashboard({Key? key}) : super(key: key);
+  const Dashboard({super.key});
 
   @override
   State<Dashboard> createState() => _DashboardState();
 }
 
-
-
 class _DashboardState extends State<Dashboard> {
-  final PageController _pageController = PageController(viewportFraction: 0.85);
-  int _currentPage = 0;
   int _selectedIndex = 0;
+  final PageController _pageController = PageController();
+  int _highlightIndex = 0;
   Timer? _sliderTimer;
+
+  final List<Map<String, String>> _highlights = const [
+    {
+      'title': 'Talk to expert counselors',
+      'subtitle': 'Book focused sessions to plan academics and careers.',
+    },
+    {
+      'title': 'Track your assessments',
+      'subtitle': 'Start with IQ tests and explore emotional wellness tools.',
+    },
+    {
+      'title': 'Build student confidence',
+      'subtitle': 'Discover programs for students, parents, and teachers.',
+    },
+  ];
 
   @override
   void initState() {
     super.initState();
-    _sliderTimer = Timer.periodic(Duration(seconds: 10), (timer) {
-      int nextPage = _currentPage + 1;
-      if (nextPage >= 3) { // number of slides
-        nextPage = 0;
-      }
+    _sliderTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+      if (!_pageController.hasClients) return;
+      final nextPage = (_highlightIndex + 1) % _highlights.length;
       _pageController.animateToPage(
         nextPage,
-        duration: Duration(milliseconds: 500),
+        duration: const Duration(milliseconds: 350),
         curve: Curves.easeInOut,
       );
-      setState(() {
-        _currentPage = nextPage;
-      });
     });
   }
 
@@ -47,568 +58,265 @@ class _DashboardState extends State<Dashboard> {
     super.dispose();
   }
 
-  // --------- DRAWER (HAMBURGER MENU) ------------
-  Widget _buildHamburgerDrawer(BuildContext context) {
-    return Drawer(
-      backgroundColor: Color(0xffe5faff),
-      child: Column(
+  void _handleBottomNav(int index) {
+    setState(() => _selectedIndex = index);
+    switch (index) {
+      case 0:
+        break;
+      case 1:
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const EditableProfilePage()));
+        break;
+      case 2:
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SettingsPage(userName: 'Ashish awhale')));
+        break;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MedhaScaffold(
+      drawer: _buildDrawer(context),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        title: const Text('MedhaMatrix', style: TextStyle(color: MedhaColors.text, fontWeight: FontWeight.w800, fontSize: 22)),
+        iconTheme: const IconThemeData(color: MedhaColors.text),
+        actions: [
+          IconButton(
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const EditableProfilePage())),
+            icon: const CircleAvatar(
+              backgroundColor: MedhaColors.hero,
+              child: Icon(Icons.person_outline_rounded, color: MedhaColors.text),
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      bottomNavigationBar: MedhaBottomNav(currentIndex: _selectedIndex, onTap: _handleBottomNav),
+      child: MedhaPageView(
         children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 32.0, left: 20, bottom: 10),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  backgroundColor: Colors.white,
-                  child: Image.asset('assets/icons/app_logo.png', width: 28, height: 28),
-                ),
-                SizedBox(width: 12),
-                Text(
-                  'MedhaMatrix',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+          MedhaHeroCard(
+            title: 'Welcome back',
+            subtitle: _highlights[_highlightIndex]['title']!,
+            trailing: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(color: Colors.white.withOpacity(0.9), borderRadius: BorderRadius.circular(18)),
+              child: const Text('3 Highlights', style: TextStyle(fontWeight: FontWeight.w700, color: MedhaColors.text)),
+            ),
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            height: 150,
+            child: PageView.builder(
+              controller: _pageController,
+              onPageChanged: (index) => setState(() => _highlightIndex = index),
+              itemCount: _highlights.length,
+              itemBuilder: (context, index) {
+                final item = _highlights[index];
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: MedhaCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(item['title']!, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: MedhaColors.text)),
+                        const SizedBox(height: 10),
+                        Text(item['subtitle']!, style: const TextStyle(fontSize: 16, height: 1.4, color: MedhaColors.muted)),
+                        const Spacer(),
+                        const Text('Tap to continue', style: TextStyle(fontSize: 15, color: MedhaColors.primary, fontWeight: FontWeight.w700)),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+              _highlights.length,
+              (index) => GestureDetector(
+                onTap: () {
+                  _pageController.animateToPage(
+                    index,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  width: _highlightIndex == index ? 24 : 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: _highlightIndex == index ? MedhaColors.primary : MedhaColors.border,
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                Spacer(),
-                IconButton(
-                  icon: Icon(Icons.close, color: Colors.black54),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
+              ),
             ),
           ),
-          Divider(),
-          Expanded(
-            child: ListView(
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              children: [
-                _buildDrawerItem(context, Icons.home, 'Home', onTap: () {
-                  Navigator.pop(context);
-                }),
-                _buildDrawerItem(context, Icons.payment, 'Payment', onTap: () {
-                  Navigator.pushNamed(context, '/payment');
-                }),
-                _buildDrawerItem(context, Icons.person, 'Download certificates', onTap: () {
-                  Navigator.pushNamed(context, '/certificate_download');
-                }),
-                _buildDrawerItem(context, Icons.settings, 'Settings', onTap: () {
-                  Navigator.pushNamed(context, '/settings');
-                }),
-                _buildDrawerItem(context, Icons.logout, 'Log Out', onTap: () {
-                  Navigator.pushNamed(context, '/login');
-                }),
-              ],
-            ),
+          const SizedBox(height: 24),
+          const MedhaSectionTitle(title: 'Quick Access', subtitle: 'Jump to your most-used workflows'),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth;
+              final crossAxisCount = width > 760 ? 4 : 2;
+              final aspectRatio = width > 760 ? 2.0 : 1.8;
+              return GridView.count(
+                crossAxisCount: crossAxisCount,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                childAspectRatio: aspectRatio,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                children: [
+                  _quickAccess(Icons.psychology_outlined, 'IQ Test', () => Navigator.pushNamed(context, '/test')),
+                  _quickAccess(Icons.school_outlined, 'Student Counseling', () => Navigator.pushNamed(context, '/counselling')),
+                  _quickAccess(Icons.family_restroom_outlined, 'Parent Counseling', () => Navigator.pushNamed(context, '/counselling')),
+                  _quickAccess(Icons.groups_2_outlined, 'Our Team', () => Navigator.pushNamed(context, '/our_team')),
+                ],
+              );
+            },
           ),
-          Padding(
-            padding: const EdgeInsets.only(left: 16, bottom: 24, top: 10),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  backgroundColor: Color(0xffe4d6fa),
-                  radius: 18,
-                  child: Icon(Icons.person, color: Colors.grey[800]),
-                ),
-                SizedBox(width: 10),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Therese Webb',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    Text(
-                      'UK Researcher',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey[700],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+          const SizedBox(height: 24),
+          const MedhaSectionTitle(title: 'Explore Services', subtitle: 'Everything you need in one place'),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth;
+              final crossAxisCount = width > 980
+                  ? 3
+                  : width > 700
+                      ? 3
+                      : 2;
+              final aspectRatio = width > 980
+                  ? 1.35
+                  : width > 700
+                      ? 1.1
+                      : 1.0;
+              return GridView.count(
+                crossAxisCount: crossAxisCount,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                childAspectRatio: aspectRatio,
+                crossAxisSpacing: 14,
+                mainAxisSpacing: 14,
+                children: [
+                  _serviceCard(context, Icons.lightbulb_outline_rounded, 'IQ Test', 'Start your assessment with guided steps.', const Color(0xFFADF1E7), () => Navigator.pushNamed(context, '/test')),
+                  _serviceCard(context, Icons.video_call_outlined, 'Counseling', 'Connect with mentors for student and parent support.', const Color(0xFFD9E9FF), () => Navigator.pushNamed(context, '/counselling')),
+                  _serviceCard(context, Icons.image_outlined, 'Gallery', 'Access activity history and recent uploads.', const Color(0xFFDDF0ED), () => Navigator.pushNamed(context, '/payment_history')),
+                  _serviceCard(context, Icons.local_offer_outlined, 'Offers', 'Check plans and discounts currently available.', const Color(0xFFF0F4EF), () => Navigator.pushNamed(context, '/offers')),
+                  _serviceCard(context, Icons.info_outline_rounded, 'About Us', 'Meet the team and learn how MedhaMatrix helps.', const Color(0xFFADF1E7), () => Navigator.pushNamed(context, '/about')),
+                  _serviceCard(context, Icons.workspace_premium_outlined, 'Certificates', 'Download and share your latest certificates.', const Color(0xFFD9E9FF), () => Navigator.pushNamed(context, '/certificate_download')),
+                ],
+              );
+            },
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDrawerItem(BuildContext context, IconData icon, String label, {VoidCallback? onTap}) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 5),
-      child: ListTile(
-        leading: Icon(icon, color: Colors.black87),
-        title: Text(label, style: TextStyle(fontSize: 16, color: Colors.black87)),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        tileColor: Colors.white,
+  Widget _quickAccess(IconData icon, String title, VoidCallback onTap) {
+    return MedhaCard(
+      padding: const EdgeInsets.all(14),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(22),
         onTap: onTap,
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        double width = constraints.maxWidth;
-        double height = constraints.maxHeight;
-        bool isTablet = width > 700;
-        bool isWide = width > 1100;
-
-        // Responsive scaling
-        double h(double val) => height * val / 817;
-        double w(double val) => width * val / 400;
-
-        return Scaffold(
-          backgroundColor: const Color.fromARGB(255, 224, 248, 255),
-          appBar: AppBar(
-            backgroundColor: Colors.white,
-            elevation: 0,
-            title: Text(
-              'Dashboard',
-              style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
-            ),
-            iconTheme: IconThemeData(color: Colors.black87),
-          ),
-          drawer: _buildHamburgerDrawer(context),
-          body: Center(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: isWide ? 1000 : double.infinity),
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: isWide
-                          ? width * 0.10
-                          : isTablet
-                              ? width * 0.05
-                              : 0.0),
-                  child: Column(
-                    children: [
-                      SizedBox(height: h(isTablet ? 50 : 20)),
-                      // HEADER (slider and dots)
-                      _buildHeaderSection(h, w, isTablet),
-                      // QUICK NAV BAR
-                      SizedBox(height: 20),
-                      _buildNavigationIndicators(h, w, isTablet),
-                      // MAIN CONTENT CARDS (Responsive wrap/grid)
-                      SizedBox(height: h(22)),
-                      _buildMainContentCards(h, w, context, width, isTablet, isWide),
-                      // BOTTOM CONTENT (Responsive wrap/grid)
-                      SizedBox(height: h(12)),
-                      _buildBottomContentCards(h, w, context, width, isTablet),
-                      SizedBox(height: h(20)),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-          // RESPONSIVE BOTTOM NAV BAR
-          bottomNavigationBar: _buildBottomNavigationBar(h, w, isTablet),
-        );
-      },
-    );
-  }
-
-  // --------- HEADER (SLIDER + DOTS) -------------
-  Widget _buildHeaderSection(double Function(double) h, double Function(double) w, bool isTablet) {
-    final List<String> sliderImages = [
-      'assets/images/slider1.png',
-      'assets/images/slider2.jpg',
-      'assets/Illustration.png',
-    ];
-    double pad = isTablet ? h(24) : h(15);
-
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        SizedBox(
-          height: isTablet ? h(180) : h(140),
-          child: PageView.builder(
-            controller: _pageController,
-            itemCount: sliderImages.length,
-            onPageChanged: (index) {
-              setState(() {
-                _currentPage = index;
-              });
-            },
-            itemBuilder: (context, index) {
-              return Container(
-                margin: EdgeInsets.symmetric(horizontal: w(10)),
-                padding: EdgeInsets.all(pad),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(h(16)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 8,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Image.asset(
-                    sliderImages[index],
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-        SizedBox(height: h(10)),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(sliderImages.length, (index) {
-            return Container(
-              width: _currentPage == index ? w(14) : w(8),
-              height: _currentPage == index ? w(14) : w(8),
-              margin: EdgeInsets.symmetric(horizontal: w(4)),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _currentPage == index ? Colors.blue : Colors.grey[400],
-              ),
-            );
-          }),
-        ),
-      ],
-    );
-  }
-
-  // --------- QUICK NAVIGATION ----------
-  Widget _buildNavigationIndicators(double Function(double) h, double Function(double) w, bool isTablet) {
-    final indicatorCount = 4;
-    final indicatorSize = isTablet ? w(54) : w(42);
-
-    final List<String> imagePaths = [
-      'assets/icons/IQ_test.png',
-      'assets/icons/student_counseling.png',
-      'assets/icons/parent_counseling.png',
-      'assets/icons/our_team.png',
-    ];
-    final List<List<String>> labels = [
-      ['IQ', 'TEST'],
-      ['Student', 'Counseling'],
-      ['Parent', 'Counseling'],
-      ['Our', 'Team'],
-    ];
-
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: isTablet ? 0 : w(12), vertical: 0),
-      child: Row(
-        mainAxisAlignment:
-            isTablet ? MainAxisAlignment.center : MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: List.generate(indicatorCount, (index) {
-            return GestureDetector(
-              onTap: () {
-                switch (index) {
-                  case 0:
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => TestSelectionPage(),
-                      ),
-                    );
-                    break;
-                  case 1:
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => CounselingSelectionPage(
-                          openStudentCounselingDialogOnLoad: true,
-                        ),
-                      ),
-                    );
-                    break;
-                  case 2:
-                        Navigator.of(context).pushNamed('/counselling');
-                    break;
-                  case 3:
-                    Navigator.of(context).pushNamed('/our_team');
-                    break;
-                }
-              },
-              child: Container(
-                margin:
-                    EdgeInsets.symmetric(horizontal: isTablet ? 20 : 0, vertical: 0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircleAvatar(
-                      radius: indicatorSize,
-                      backgroundColor: Colors.white,
-                      child: Padding(
-                        padding: EdgeInsets.all(8),
-                        child: Image.asset(
-                          imagePaths[index],
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 6),
-                    Text(
-                      labels[index][0],
-                      style: TextStyle(
-                        fontSize: isTablet ? 13 : 10,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    Text(
-                      labels[index][1],
-                      style: TextStyle(
-                        fontSize: isTablet ? 13 : 10,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-        }),
-      ),
-    );
-  }
-
-  // --------- MAIN CARDS (responsive grid/wrap) ---------
-  Widget _buildMainContentCards(double Function(double) h, double Function(double) w, BuildContext context, double width, bool isTablet, bool isWide) {
-    double spacing = isTablet ? 24 : 16;
-    double cardWidth = (width - spacing * 3) / 2;
-    double smallCardHeight = isTablet ? 110 : 90;
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        GestureDetector(
-          onTap: () => Navigator.of(context).pushNamed('/test'),
-          child: Container(
-            width: cardWidth,
-            height: isTablet ? 220 : 180,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 12,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Test',
-                  style: TextStyle(
-                    fontSize: isTablet ? 24 : 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                SizedBox(height: isTablet ? 20 : 12),
-                Image.asset(
-                  'assets/icons/test_gif.gif',
-                  height: isTablet ? 100 : 80,
-                  fit: BoxFit.contain,
-                ),
-              ],
-            ),
-          ),
-        ),
-        SizedBox(width: spacing),
-        Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Row(
           children: [
-            GestureDetector(
-              onTap: () => Navigator.of(context).pushNamed('/counselling'),
-              child: Container(
-                width: cardWidth,
-                height: smallCardHeight,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(18),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 12,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Text(
-                    'Counseling',
-                    style: TextStyle(
-                      fontSize: isTablet ? 20 : 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: spacing),
-            GestureDetector(
-              onTap: () => Navigator.of(context).pushNamed('/payment_history'),
-              child: Container(
-                width: cardWidth,
-                height: smallCardHeight,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(18),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 12,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Text(
-                    'Gallery',
-                    style: TextStyle(
-                      fontSize: isTablet ? 20 : 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            MedhaIconTile(icon: icon, size: 52),
+            const SizedBox(width: 12),
+            Expanded(child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700))),
+            const Icon(Icons.chevron_right_rounded, color: MedhaColors.muted),
           ],
         ),
-      ],
+      ),
     );
   }
 
-  Widget _buildBottomContentCards(double Function(double) h, double Function(double) w, BuildContext context, double width, bool isTablet) {
-    double spacing = isTablet ? 24 : 16;
-    double cardWidth = (width - spacing * 3) / 2;
-    double cardHeight = isTablet ? 110 : 90;
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        GestureDetector(
-          onTap: () => Navigator.of(context).pushNamed('/offers'),
-          child: Container(
-            width: cardWidth,
-            height: cardHeight,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 12,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                'Offers',
-                style: TextStyle(
-                  fontSize: isTablet ? 20 : 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
-              ),
-            ),
-          ),
+  Widget _serviceCard(BuildContext context, IconData icon, String title, String subtitle, Color tone, VoidCallback onTap) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(28),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: tone,
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 18, offset: const Offset(0, 10)),
+          ],
         ),
-        SizedBox(width: spacing),
-        GestureDetector(
-          onTap: () => Navigator.of(context).pushNamed('/about'),
-          child: Container(
-            width: cardWidth,
-            height: cardHeight,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 12,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                'About Us',
-                style: TextStyle(
-                  fontSize: isTablet ? 20 : 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
-              ),
-            ),
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            MedhaIconTile(icon: icon, size: 54, backgroundColor: Colors.white.withOpacity(0.75), iconColor: MedhaColors.text),
+            const Spacer(),
+            Text(title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: MedhaColors.text)),
+            const SizedBox(height: 8),
+            Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, height: 1.35, color: MedhaColors.muted)),
+          ],
         ),
-      ],
+      ),
     );
   }
 
-  // --------- RESPONSIVE BOTTOM NAV BAR -----------
-  Widget _buildBottomNavigationBar(double Function(double) h, double Function(double) w, bool isTablet) {
-    final List<IconData> icons = [
-      Icons.home,
-      Icons.person,
-      Icons.settings,
-    ];
+  Drawer _buildDrawer(BuildContext context) {
+    return Drawer(
+      backgroundColor: MedhaColors.page,
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            children: [
+              const MedhaHeroCard(
+                leading: CircleAvatar(
+                  radius: 26,
+                  backgroundColor: Colors.white,
+                  child: Text('M', style: TextStyle(fontWeight: FontWeight.w800, color: MedhaColors.primary)),
+                ),
+                title: 'MedhaMatrix',
+                subtitle: 'Student success hub',
+                trailing: Icon(Icons.close_rounded, color: MedhaColors.text),
+              ),
+              const SizedBox(height: 18),
+              Expanded(
+                child: ListView(
+                  children: [
+                    _drawerItem(context, Icons.home_rounded, 'Home', 'Back to dashboard', () => Navigator.pop(context)),
+                    _drawerItem(context, Icons.payment_rounded, 'Payment', 'Review transactions', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PaymentPage()))),
+                    _drawerItem(context, Icons.workspace_premium_outlined, 'Certificates', 'Download your certificates', () => Navigator.push(context, MaterialPageRoute(builder: (_) => CertificateDownloadPage()))),
+                    _drawerItem(context, Icons.video_call_outlined, 'My Sessions', 'View scheduled counseling calls', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CounselingSelectionPage()))),
+                    _drawerItem(context, Icons.play_circle_outline_rounded, 'Video Preview', 'Test your camera and audio', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HelpSupportPage()))),
+                    _drawerItem(context, Icons.call_outlined, 'Live Test Call', 'Join the live test room', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CounselingSelectionPage()))),
+                    _drawerItem(context, Icons.settings_outlined, 'Settings', 'App preferences and controls', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsPage(userName: 'Ashish awhale')))),
+                    _drawerItem(context, Icons.logout_rounded, 'Log Out', 'Sign out from this device', () => Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false), iconColor: MedhaColors.danger),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
-    final List<String> labels = [
-      'Home',
-      'Profile',
-      'Setting',
-    ];
-
-    return BottomNavigationBar(
-      currentIndex: _selectedIndex,
-      selectedItemColor: Colors.teal,
-      unselectedItemColor: Colors.grey,
-      backgroundColor: Color.fromARGB(255, 224, 248, 255),
-      selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold),
-      unselectedLabelStyle: TextStyle(fontWeight: FontWeight.normal),
-      type: BottomNavigationBarType.fixed,
-      onTap: (index) async {
-        if (index == 2) {
-          setState(() {
-            _selectedIndex = index;
-          });
-          await Navigator.of(context).pushNamed('/settings');
-          setState(() {
-            _selectedIndex = 0; // Reset to home on return
-          });
-        } else {
-          setState(() {
-            _selectedIndex = index;
-          });
-          switch (index) {
-            case 0:
-              Navigator.of(context).pushNamed('/home');
-              break;
-            case 1:
-              Navigator.of(context).pushNamed('/profile');
-              break;
-          }
-        }
-      },
-      items: List.generate(labels.length, (index) {
-        return BottomNavigationBarItem(
-          icon: Icon(icons[index]),
-          label: labels[index],
-        );
-      }),
+  Widget _drawerItem(BuildContext context, IconData icon, String title, String subtitle, VoidCallback onTap, {Color iconColor = MedhaColors.text}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: MedhaCard(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: MedhaMenuRow(
+          icon: icon,
+          title: title,
+          subtitle: subtitle,
+          onTap: onTap,
+          iconColor: iconColor,
+        ),
+      ),
     );
   }
 }

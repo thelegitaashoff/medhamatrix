@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:medhamatrix/l10n/app_localizations.dart';
-import 'dashboard.dart';
-import 'settings.dart';
-import 'services/user_service.dart';
+import 'package:medhamatrix/medha_ui.dart';
+import 'package:medhamatrix/services/api_service.dart';
+import 'package:medhamatrix/services/user_service.dart';
 
 class EditableProfilePage extends StatefulWidget {
   final bool startEditing;
 
-  EditableProfilePage({this.startEditing = false});
+  const EditableProfilePage({super.key, this.startEditing = false});
 
   @override
   State<EditableProfilePage> createState() => _EditableProfilePageState();
@@ -17,19 +17,18 @@ class _EditableProfilePageState extends State<EditableProfilePage> {
   bool isEditing = false;
   bool _isLoading = false;
 
-  // Profile data - will be loaded from UserService
   String name = '';
   int age = 0;
   String birthday = '';
   String school = '';
+  int? schoolId;
   String email = '';
   String phone = '';
+  List<_SchoolOption> _schoolOptions = const [];
 
-  // Controllers for editing
   final nameController = TextEditingController();
   final ageController = TextEditingController();
   final birthdayController = TextEditingController();
-  final schoolController = TextEditingController();
   final emailController = TextEditingController();
   final phoneController = TextEditingController();
 
@@ -37,89 +36,158 @@ class _EditableProfilePageState extends State<EditableProfilePage> {
   void initState() {
     super.initState();
     _loadProfileData();
-    if (widget.startEditing) {
-      _startEditing();
+  }
+
+  Future<void> _loadProfileData() async {
+    setState(() => _isLoading = true);
+    await UserService.initialize();
+    if (UserService.authToken != null && UserService.authToken!.isNotEmpty) {
+      try {
+        await UserService.fetchUserProfileFromAPI();
+      } catch (_) {}
+    }
+    final user = UserService.currentUser;
+    if (user != null) {
+      name = user.fullName;
+      age = user.age;
+      birthday = user.birthday;
+      school = user.school;
+      schoolId = user.schoolId;
+      email = user.email;
+      phone = user.phone;
+    }
+    await _loadSchoolOptions();
+    _syncControllers();
+    isEditing = widget.startEditing;
+    if (mounted) setState(() => _isLoading = false);
+  }
+
+  void _syncControllers() {
+    nameController.text = name;
+    ageController.text = age == 0 ? '' : age.toString();
+    birthdayController.text = birthday;
+    emailController.text = email;
+    phoneController.text = phone;
+  }
+
+  Future<void> _loadSchoolOptions() async {
+    try {
+      final response = await ApiService.getSchoolCollegeNames(UserService.authToken);
+      if (!response.success || response.data == null) {
+        return;
+      }
+
+      final options = _extractSchoolOptions(response.data!);
+      if (options.isEmpty) {
+        return;
+      }
+
+      if (schoolId != null) {
+        final current = options.where((option) => option.id == schoolId).firstOrNull;
+        if (current != null) {
+          school = current.name;
+        }
+      } else if (school.isNotEmpty) {
+        final matched = options.where((option) => option.name == school).firstOrNull;
+        if (matched != null) {
+          schoolId = matched.id;
+          school = matched.name;
+        }
+      }
+
+      _schoolOptions = options;
+    } catch (_) {}
+  }
+
+  List<_SchoolOption> _extractSchoolOptions(Map<String, dynamic> payload) {
+    final candidates = [
+      payload['data'],
+      payload['results'],
+      payload['items'],
+      payload['schools'],
+      payload['colleges'],
+      payload,
+    ];
+
+    for (final candidate in candidates) {
+      final options = _parseSchoolList(candidate);
+      if (options.isNotEmpty) {
+        return options;
+      }
+    }
+
+    return const [];
+  }
+
+  List<_SchoolOption> _parseSchoolList(dynamic source) {
+    if (source is List) {
+      return source
+          .map((item) => _SchoolOption.fromDynamic(item))
+          .whereType<_SchoolOption>()
+          .toList();
+    }
+
+    if (source is Map<String, dynamic>) {
+      final nested = [
+        source['data'],
+        source['results'],
+        source['items'],
+        source['schools'],
+        source['colleges'],
+      ];
+
+      for (final candidate in nested) {
+        final options = _parseSchoolList(candidate);
+        if (options.isNotEmpty) {
+          return options;
+        }
+      }
+    }
+
+    return const [];
+  }
+
+  Future<void> _saveProfile() async {
+    if (schoolId == null || school.isEmpty) {
+      _snack('Please select your school', isError: true);
+      return;
+    }
+
+    if (birthdayController.text.trim().isEmpty) {
+      _snack('Please enter date of birth', isError: true);
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    try {
+      final success = await UserService.updateUserProfileToAPI(
+        schoolId: schoolId!,
+        schoolName: school,
+        birthday: birthdayController.text.trim(),
+      );
+      if (success) {
+        setState(() {
+          birthday = birthdayController.text.trim();
+          isEditing = false;
+        });
+        _snack('Profile updated successfully');
+      } else {
+        _snack('Failed to update profile', isError: true);
+      }
+    } catch (_) {
+      _snack('Error updating profile', isError: true);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
-  
-  // Load profile data from UserService
-  Future<void> _loadProfileData() async {
-    setState(() {
-      _isLoading = true;
-    });
-    
-    print('Loading profile data...');
-    
-    // Initialize UserService first
-    await UserService.initialize();
-    
-    // Check if we have an auth token
-    final token = UserService.authToken;
-    print('Auth token available: ${token != null ? 'Yes' : 'No'}');
-    
-    if (token != null && token.isNotEmpty) {
-      try {
-        // Try to fetch fresh data from API first
-        print('Attempting to fetch profile from API...');
-        final success = await UserService.fetchUserProfileFromAPI();
-        print('API fetch result: $success');
-        
-        if (!success) {
-          print('API fetch failed, showing message to user');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to load latest profile data from server. Showing cached data.'),
-              backgroundColor: Colors.orange,
-            ),
-          );
-        }
-      } catch (e) {
-        print('Failed to fetch from API: $e');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error loading profile: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } else {
-      print('No auth token available, using cached data');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('No authentication token found. Please login again.'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-    }
-    
-    // Load current user data (from cache or API)
-    final user = UserService.currentUser;
-    print('Current user data: ${user?.toJson()}');
-    
-    if (user != null) {
-      setState(() {
-        name = user.fullName;
-        age = user.age;
-        birthday = user.birthday;
-        school = user.school;
-        email = user.email;
-        phone = user.phone;
-        _isLoading = false;
-      });
-      print('Profile data loaded: $name, $email');
-    } else {
-      print('No user data available');
-      setState(() {
-        // Set default values if no user data
-        name = 'User';
-        age = 0;
-        birthday = '';
-        school = '';
-        email = '';
-        phone = '';
-        _isLoading = false;
-      });
-    }
+
+  void _snack(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? MedhaColors.danger : MedhaColors.primary,
+      ),
+    );
   }
 
   @override
@@ -127,310 +195,207 @@ class _EditableProfilePageState extends State<EditableProfilePage> {
     nameController.dispose();
     ageController.dispose();
     birthdayController.dispose();
-    schoolController.dispose();
     emailController.dispose();
     phoneController.dispose();
     super.dispose();
   }
 
-  void _startEditing() {
-    setState(() {
-      isEditing = true;
-      nameController.text = name;
-      ageController.text = age.toString();
-      birthdayController.text = birthday;
-      schoolController.text = school;
-      emailController.text = email;
-      phoneController.text = phone;
-    });
-  }
-
-  void _cancelEditing() {
-    setState(() {
-      isEditing = false;
-    });
-  }
-
-  Future<void> _saveProfile() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      // Update via API first
-      final success = await UserService.updateUserProfileToAPI(
-        fullName: nameController.text.trim(),
-        age: int.tryParse(ageController.text),
-        birthday: birthdayController.text.trim(),
-        school: schoolController.text.trim(),
-        email: emailController.text.trim(),
-        phone: phoneController.text.trim(),
-      );
-
-      if (success) {
-        // Update local state
-        setState(() {
-          name = nameController.text;
-          age = int.tryParse(ageController.text) ?? age;
-          birthday = birthdayController.text;
-          school = schoolController.text;
-          email = emailController.text;
-          phone = phoneController.text;
-          isEditing = false;
-          _isLoading = false;
-        });
-
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Profile updated successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } else {
-        setState(() {
-          _isLoading = false;
-        });
-
-        // Show error message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to update profile. Please try again.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error updating profile: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => Dashboard()),
-            );
-          },
-        ),
-        backgroundColor: Colors.grey[100],
-        elevation: 0,
-      ),
-      backgroundColor: Color.fromARGB(255, 224, 248, 255),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Container(
-            width: 350,
-            padding: EdgeInsets.symmetric(vertical: 32, horizontal: 24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 24,
-                  offset: Offset(0, 8),
-                ),
-              ],
+    return MedhaScaffold(
+      appBar: const MedhaTopBar(title: 'Profile', subtitle: 'Manage your account'),
+      child: MedhaPageView(
+        children: [
+          MedhaHeroCard(
+            leading: CircleAvatar(
+              radius: 38,
+              backgroundColor: Colors.white,
+              backgroundImage: const AssetImage('assets/avatar.jpg'),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircleAvatar(
-                  radius: 45,
-                  backgroundImage: AssetImage('assets/avatar.jpg'),
-                ),
-                SizedBox(height: 24),
-                _ProfileFieldBox(
-                  label: localizations.name,
-                  value: name,
-                  isEditing: isEditing,
-                  controller: nameController,
-                ),
-                // Username field showing the full name (read-only)
-                _ProfileFieldBox(
-                  label: "Username",
-                  value: name, // Username automatically updates with name
-                  isEditing: false, // Always read-only
-                  controller: TextEditingController(text: name), // Controller with current name
-                  isReadOnly: true,
-                ),
-                _ProfileFieldBox(
-                  label: localizations.age,
-                  value: age.toString(),
-                  isEditing: isEditing,
-                  controller: ageController,
-                  type: TextInputType.number,
-                ),
-                _ProfileFieldBox(
-                  label: localizations.birthday,
-                  value: birthday,
-                  isEditing: isEditing,
-                  controller: birthdayController,
-                ),
-                _ProfileFieldBox(
-                  label: localizations.school,
-                  value: school,
-                  isEditing: isEditing,
-                  controller: schoolController,
-                ),
-                _ProfileFieldBox(
-                  label: localizations.email,
-                  value: email,
-                  isEditing: isEditing,
-                  controller: emailController,
-                  type: TextInputType.emailAddress,
-                ),
-                _ProfileFieldBox(
-                  label: localizations.phone,
-                  value: phone,
-                  isEditing: isEditing,
-                  controller: phoneController,
-                  type: TextInputType.phone,
-                ),
-                SizedBox(height: 24),
-                isEditing
-                    ? Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          ElevatedButton(
-                            onPressed: _saveProfile,
-                            child: Text(localizations.save, style: TextStyle(color: Colors.white)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color.fromARGB(250, 57, 201, 245),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              padding: EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                            ),
-                          ),
-                          SizedBox(width: 10),
-                          ElevatedButton(
-                            onPressed: _cancelEditing,
-                            child: Text(localizations.cancel, style: TextStyle(color: Colors.white)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color.fromARGB(250, 57, 201, 245),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              padding: EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                            ),
-                          ),
-                        ],
-                      )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          ElevatedButton(
-                            onPressed: _startEditing,
-                            child: Text(localizations.editProfile, style: TextStyle(color: Colors.white)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color.fromARGB(250, 57, 201, 245),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              padding: EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                            ),
-                          ),
-                        ],
-                      ),
-              ],
-            ),
+            title: name.isEmpty ? 'MedhaMatrix User' : name,
+            subtitle: email.isEmpty ? 'Update your contact information' : email,
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ProfileFieldBox extends StatelessWidget {
-  final String label;
-  final String value;
-  final bool isEditing;
-  final TextEditingController controller;
-  final TextInputType type;
-  final bool isReadOnly;
-
-  const _ProfileFieldBox({
-    required this.label,
-    required this.value,
-    required this.isEditing,
-    required this.controller,
-    this.type = TextInputType.text,
-    this.isReadOnly = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    // Special styling for read-only username field
-    bool isUsernameField = label == "Username" && isReadOnly;
-    
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 7),
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: isUsernameField ? Colors.blue[50] : Colors.grey[50],
-        borderRadius: BorderRadius.circular(8),
-        border: isUsernameField ? Border.all(color: Color.fromARGB(250, 57, 201, 245), width: 1.5) : null,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.12),
-            blurRadius: 6,
-            offset: Offset(0, 2),
+          const SizedBox(height: 18),
+          MedhaCard(
+            child: _isLoading
+                ? const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 40),
+                    child: Center(child: CircularProgressIndicator(color: MedhaColors.primary)),
+                  )
+                : Column(
+                    children: [
+                      _buildField(localizations.name, nameController, false),
+                      _buildField(localizations.email, emailController, false, keyboardType: TextInputType.emailAddress),
+                      _buildSchoolField(localizations.school),
+                      _buildField(localizations.phone, phoneController, false, keyboardType: TextInputType.phone),
+                      _buildField(localizations.age, ageController, false, keyboardType: TextInputType.number),
+                      _buildField(localizations.birthday, birthdayController, isEditing),
+                      if (isEditing)
+                        const Padding(
+                          padding: EdgeInsets.only(bottom: 14),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'You can update your school and date of birth here.',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: MedhaColors.muted,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      const SizedBox(height: 20),
+                      if (isEditing) ...[
+                        MedhaPrimaryButton(label: 'Save Profile', icon: Icons.check_rounded, onPressed: _saveProfile),
+                        const SizedBox(height: 12),
+                        MedhaOutlineButton(
+                          label: 'Cancel',
+                          onPressed: () {
+                            _syncControllers();
+                            setState(() => isEditing = false);
+                          },
+                        ),
+                      ] else
+                        SizedBox(
+                          width: 220,
+                          child: MedhaPrimaryButton(
+                            label: localizations.editProfile,
+                            icon: Icons.edit_rounded,
+                            onPressed: () => setState(() => isEditing = true),
+                          ),
+                        ),
+                    ],
+                  ),
           ),
         ],
       ),
-      child: (isEditing && !isReadOnly)
+    );
+  }
+
+  Widget _buildField(
+    String label,
+    TextEditingController controller,
+    bool editable, {
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: MedhaColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: MedhaColors.border),
+      ),
+      child: editable
           ? TextFormField(
               controller: controller,
-              keyboardType: type,
+              keyboardType: keyboardType,
+              decoration: InputDecoration(labelText: label, border: InputBorder.none),
+            )
+          : Row(
+              children: [
+                Text(
+                  '$label: ',
+                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: MedhaColors.text),
+                ),
+                Expanded(
+                  child: Text(
+                    controller.text.isEmpty ? '-' : controller.text,
+                    style: const TextStyle(fontSize: 15, color: MedhaColors.text),
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+
+  Widget _buildSchoolField(String label) {
+    final hasSelectedSchool =
+        schoolId != null && _schoolOptions.any((option) => option.id == schoolId);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: MedhaColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: MedhaColors.border),
+      ),
+      child: isEditing
+          ? DropdownButtonFormField<int>(
+              value: hasSelectedSchool ? schoolId : null,
+              isExpanded: true,
+              items: _schoolOptions
+                  .map(
+                    (option) => DropdownMenuItem<int>(
+                      value: option.id,
+                      child: Text(
+                        option.name,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (value) {
+                if (value == null) return;
+                final selected = _schoolOptions.where((option) => option.id == value).firstOrNull;
+                if (selected == null) return;
+                setState(() {
+                  schoolId = selected.id;
+                  school = selected.name;
+                });
+              },
               decoration: InputDecoration(
                 labelText: label,
                 border: InputBorder.none,
+                hintText: _schoolOptions.isEmpty ? 'Loading schools...' : 'Select school',
               ),
             )
           : Row(
               children: [
                 Text(
                   '$label: ',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600, 
-                    color: isUsernameField ? Color.fromARGB(250, 57, 201, 245) : Colors.black87
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: MedhaColors.text),
                 ),
-                SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    value,
-                    style: TextStyle(
-                      color: isUsernameField ? Color.fromARGB(250, 57, 201, 245) : Colors.black87,
-                      fontWeight: isUsernameField ? FontWeight.w600 : FontWeight.normal,
-                    ),
+                    school.isEmpty ? '-' : school,
+                    style: const TextStyle(fontSize: 15, color: MedhaColors.text),
                   ),
                 ),
-                if (isUsernameField)
-                  Icon(
-                    Icons.person_outline,
-                    color: Color.fromARGB(250, 57, 201, 245),
-                    size: 20,
-                  ),
               ],
             ),
     );
   }
+}
+
+class _SchoolOption {
+  final int id;
+  final String name;
+
+  const _SchoolOption({
+    required this.id,
+    required this.name,
+  });
+
+  static _SchoolOption? fromDynamic(dynamic source) {
+    if (source is! Map) return null;
+
+    final map = Map<String, dynamic>.from(source as Map);
+    final rawId = map['id'] ?? map['pk'] ?? map['value'];
+    final id = rawId is int ? rawId : int.tryParse('$rawId');
+    final name = (map['name'] ?? map['sclname'] ?? map['title'] ?? map['label'] ?? '').toString().trim();
+
+    if (id == null || name.isEmpty) {
+      return null;
+    }
+
+    return _SchoolOption(id: id, name: name);
+  }
+}
+
+extension<T> on Iterable<T> {
+  T? get firstOrNull => isEmpty ? null : first;
 }

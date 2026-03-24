@@ -1,231 +1,102 @@
 import 'package:flutter/material.dart';
-import 'change_password.dart';
-import 'language.dart';
-import 'notifications.dart';
-import 'theme.dart';
-import 'privacy_security.dart';
-import 'help_support.dart';
 import 'about.dart';
-import 'profile.dart';  // Added import for profile page
+import 'help_support.dart';
+import 'medha_ui.dart';
+import 'notifications.dart';
+import 'privacy_security.dart';
+import 'profile.dart';
 
 class SettingsPage extends StatelessWidget {
   final String userName;
 
   const SettingsPage({super.key, required this.userName});
 
-  Widget settingBox(Widget child) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 12),
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.10),
-            blurRadius: 12,
-            spreadRadius: 2,
-            offset: const Offset(0, 3),
-          ),
-        ],
-        border: Border.all(color: Colors.blueGrey.shade100, width: 1),
-      ),
-      child: child,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 0.5,
-      ),
-      backgroundColor: Color.fromARGB(255, 224, 248, 255),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Profile section
-            settingBox(
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 28,
-                    backgroundColor: Colors.teal.withOpacity(0.2),
-                    child: Icon(
-                      Icons.person,
-                      size: 32,
-                      color: Colors.teal,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        userName,
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Username: $userName',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Color.fromARGB(250, 57, 201, 245),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => EditableProfilePage(startEditing: true)),
-                      );
-                    },
-                    child: Icon(Icons.edit, color: Colors.blueGrey, size: 22),
-                  ),
-                ],
-              ),
+    return MedhaScaffold(
+      appBar: const MedhaTopBar(title: 'Settings', subtitle: 'Manage account and preferences'),
+      child: MedhaPageView(
+        children: [
+          MedhaHeroCard(
+            leading: const MedhaIconTile(
+              icon: Icons.person_outline_rounded,
+              size: 78,
+              backgroundColor: Colors.white,
             ),
-
-            // Account settings
-            settingBox(
-              Column(
-                children: [
-                  _settingTile(Icons.lock, "Change Password"),
-                  _divider(),
-                  _settingTile(Icons.language, "Language"),
-                  _divider(),
-                  _settingTile(Icons.notifications, "Notifications"),
-                ],
-              ),
-            ),
-
-            // App settings
-            settingBox(
-              Column(
-                children: [
-                  _settingTile(Icons.color_lens, "Theme"),
-                  _divider(),
-                  _settingTile(Icons.privacy_tip, "Privacy & Security"),
-                  // Removed Storage as requested
-                ],
-              ),
-            ),
-
-            // Help & about
-            settingBox(
-              Column(
-                children: [
-                  _settingTile(Icons.help_outline, "Help & Support"),
-                  _divider(),
-                  _settingTile(Icons.info_outline, "About MedhaMatrix"),
-                  _divider(),
-                  _settingTile(Icons.exit_to_app, "Logout", iconColor: Colors.red),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _settingTile(IconData icon, String title, {Color? iconColor}) {
-    return Builder(
-      builder: (BuildContext context) {
-        return ListTile(
-          leading: CircleAvatar(
-            backgroundColor: Colors.blueAccent.withOpacity(0.14),
-            child: Icon(icon, color: iconColor ?? Colors.blue, size: 22),
-            radius: 18,
+            title: userName,
+            subtitle: 'Account settings overview',
           ),
-          title: Text(title, style: const TextStyle(fontSize: 16)),
-          trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey),
-          onTap: () {
-            // Navigate to respective pages
-            switch (title) {
-              case 'Change Password':
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => ChangePasswordPage()),
-                );
-                break;
-              case 'Language':
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => LanguagePage()),
-                );
-                break;
-              case 'Notifications':
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => NotificationSettingsPage()),
-                );
-                break;
-              case 'Theme':
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => ThemeSelectionPage()),
-                );
-                break;
-              case 'Privacy & Security':
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => PrivacySecurityPage()),
-                );
-                break;
-              case 'Help & Support':
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => HelpSupportPage()),
-                );
-                break;
-              case 'About MedhaMatrix':
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => AboutUsMedhaMatrixPage()),
-                );
-                break;
-              case 'Logout':
-                // Placeholder logout action
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: Text('Logout'),
-                    content: Text('Are you sure you want to logout?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: Text('Cancel'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                          // Add logout logic here
-                        },
-                        child: Text('Logout'),
-                      ),
-                    ],
+          const SizedBox(height: 18),
+          const MedhaSectionTitle(
+            title: 'Preferences',
+            subtitle: 'Tune alerts, privacy, and account access',
+          ),
+          MedhaCard(
+            child: Column(
+              children: [
+                MedhaMenuRow(
+                  icon: Icons.notifications_none_rounded,
+                  title: 'Notifications',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const NotificationSettingsPage()),
                   ),
-                );
-                break;
-              default:
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Clicked on $title')),
-                );
-            }
-          },
-          contentPadding: const EdgeInsets.all(0),
-        );
-      },
-    );
-  }
-
-  Widget _divider() {
-    return Divider(
-      thickness: 1,
-      color: Colors.blueGrey.shade50,
-      height: 4,
+                ),
+                const Divider(color: MedhaColors.border),
+                MedhaMenuRow(
+                  icon: Icons.shield_outlined,
+                  title: 'Privacy & Security',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const PrivacySecurityPage()),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+          const MedhaSectionTitle(
+            title: 'Support',
+            subtitle: 'Reach help pages and account actions',
+          ),
+          MedhaCard(
+            child: Column(
+              children: [
+                MedhaMenuRow(
+                  icon: Icons.person_2_outlined,
+                  title: 'Profile',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const EditableProfilePage()),
+                  ),
+                ),
+                const Divider(color: MedhaColors.border),
+                MedhaMenuRow(
+                  icon: Icons.help_outline_rounded,
+                  title: 'Help & Support',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const HelpSupportPage()),
+                  ),
+                ),
+                const Divider(color: MedhaColors.border),
+                MedhaMenuRow(
+                  icon: Icons.info_outline_rounded,
+                  title: 'About MedhaMatrix',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const AboutUsMedhaMatrixPage()),
+                  ),
+                ),
+                const Divider(color: MedhaColors.border),
+                MedhaMenuRow(
+                  icon: Icons.logout_rounded,
+                  title: 'Logout',
+                  iconColor: MedhaColors.danger,
+                  iconBackground: const Color(0xFFFBE8E8),
+                  textColor: MedhaColors.danger,
+                  onTap: () => Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

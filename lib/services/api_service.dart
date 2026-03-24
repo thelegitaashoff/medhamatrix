@@ -7,7 +7,19 @@ import '../models/login_request.dart';
 import '../models/api_response.dart';
 
 class ApiService {
-  static const String baseUrl = 'https://medhamatrix.com/api/auth';
+  static const String baseUrl = 'https://medhamatrix.com/auth/api/auth';
+  static const String signupEndpoint = '$baseUrl/studentRegistration/';
+  static const String loginEndpoint = 'https://medhamatrix.com/auth/api/auth/api/token/';
+  static const String userProfileEndpoint = '$baseUrl/userProfile/';
+  static const String schoolCollegeNameEndpoint = '$baseUrl/schoolClgName';
+  static const String iqQuestionsEndpoint = 'https://medhamatrix.com/tests/api/iqtest/questions/';
+  static const List<String> loginEndpoints = [
+    loginEndpoint,
+    'https://medhamatrix.com/api/token/',
+    '$baseUrl/token/',
+    '$baseUrl/login/',
+    'https://medhamatrix.com/api/login/',
+  ];
   static const Duration timeoutDuration = Duration(seconds: 30);
   static const int maxRetries = 3;
 
@@ -30,7 +42,7 @@ class ApiService {
 
       final response = await _makeRequest(
         method: 'POST',
-        endpoint: '$baseUrl/studentRegistration/',
+        endpoint: signupEndpoint,
         body: mappedSignupData,
       );
 
@@ -71,14 +83,39 @@ class ApiService {
       LoginRequest loginData) async {
     try {
       print('Login Request: ${loginData.toJson()}');
-      final response = await _makeRequest(
-        method: 'POST',
-        endpoint: '$baseUrl/api/token/',
-        body: loginData.toJson(),
+      http.Response? lastResponse;
+
+      for (final endpoint in loginEndpoints) {
+        final response = await _makeRequest(
+          method: 'POST',
+          endpoint: endpoint,
+          body: loginData.toJson(),
+        );
+
+        print('Login Endpoint Tried: $endpoint');
+        print('Login Response Status: ${response.statusCode}');
+        print('Login Response Body: ${response.body}');
+
+        lastResponse = response;
+
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          return _handleResponse(response);
+        }
+
+        if (response.statusCode != 404 && response.statusCode != 405) {
+          return _handleResponse(response);
+        }
+      }
+
+      if (lastResponse != null) {
+        return _handleResponse(lastResponse);
+      }
+
+      return ApiResponse(
+        success: false,
+        message: 'Login failed: no login endpoint responded successfully.',
+        data: null,
       );
-      print('Login Response Status: ${response.statusCode}');
-      print('Login Response Body: ${response.body}');
-      return _handleResponse(response);
     } on SocketException {
       return ApiResponse(
         success: false,
@@ -130,7 +167,7 @@ class ApiService {
             response = await http.post(
               uri,
               headers: requestHeaders,
-              body: json.encode(body),
+              body: body == null ? null : json.encode(body),
             ).timeout(timeoutDuration);
             break;
           case 'GET':
@@ -143,7 +180,14 @@ class ApiService {
             response = await http.put(
               uri,
               headers: requestHeaders,
-              body: json.encode(body),
+              body: body == null ? null : json.encode(body),
+            ).timeout(timeoutDuration);
+            break;
+          case 'PATCH':
+            response = await http.patch(
+              uri,
+              headers: requestHeaders,
+              body: body == null ? null : json.encode(body),
             ).timeout(timeoutDuration);
             break;
           default:
@@ -182,18 +226,19 @@ class ApiService {
   static ApiResponse<Map<String, dynamic>> _handleResponse(http.Response response) {
     try {
       final responseData = json.decode(response.body);
+      final resolvedMessage = _extractResponseMessage(responseData);
       
       if (response.statusCode >= 200 && response.statusCode < 300) {
         return ApiResponse(
           success: true,
-          message: responseData['message'] ?? 'Request successful',
+          message: resolvedMessage ?? 'Request successful',
           data: responseData,
         );
       } else if (response.statusCode == 400) {
         String errorMessage = 'Request failed';
         
-        if (responseData['message'] != null) {
-          errorMessage = responseData['message'];
+        if (resolvedMessage != null && resolvedMessage.isNotEmpty) {
+          errorMessage = resolvedMessage;
         } else if (responseData['errors'] != null) {
           final errors = responseData['errors'] as Map<String, dynamic>;
           final errorList = <String>[];
@@ -215,14 +260,22 @@ class ApiService {
       } else {
         return ApiResponse(
           success: false,
-          message: responseData['message'] ?? 'Request failed (Status: ${response.statusCode})',
+          message: resolvedMessage ?? 'Request failed (Status: ${response.statusCode})',
           data: responseData,
         );
       }
     } on FormatException {
+      final contentType = response.headers['content-type'] ?? '';
+      final hasHtmlBody = response.body.toLowerCase().contains('<html');
+      final genericMessage = response.statusCode == 405
+          ? 'Request failed with 405 Not Allowed. Please verify the API endpoint and HTTP method.'
+          : 'Invalid response format from server';
+
       return ApiResponse(
         success: false,
-        message: 'Invalid JSON response from server',
+        message: contentType.contains('text/html') || hasHtmlBody
+            ? genericMessage
+            : 'Invalid JSON response from server',
         data: null,
       );
     }
@@ -271,10 +324,11 @@ class ApiService {
         headers['Authorization'] = 'Bearer $token';
       }
       
-      final response = await http.get(
-        Uri.parse('$baseUrl/userProfile/'),
+      final response = await _makeRequest(
+        method: 'POST',
+        endpoint: userProfileEndpoint,
         headers: headers,
-      ).timeout(timeoutDuration);
+      );
       
       print('Profile Response Status: ${response.statusCode}');
       print('Profile Response Body: ${response.body}');
@@ -324,8 +378,8 @@ class ApiService {
       }
       
       final response = await _makeRequest(
-        method: 'PUT',
-        endpoint: '$baseUrl/userProfile/',
+        method: 'PATCH',
+        endpoint: userProfileEndpoint,
         body: profileData,
         headers: headers,
       );
@@ -356,6 +410,200 @@ class ApiService {
       return ApiResponse(
         success: false,
         message: 'Failed to update profile: ${e.toString()}',
+        data: null,
+      );
+    }
+  }
+
+  static String? _extractResponseMessage(dynamic responseData) {
+    if (responseData is! Map) return null;
+
+    final message = responseData['message'] ??
+        responseData['msg'] ??
+        responseData['detail'] ??
+        responseData['error'];
+
+    return message is String && message.trim().isNotEmpty ? message.trim() : null;
+  }
+
+  static Map<String, String> _buildAuthorizedJsonHeaders(String token) {
+    return {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+  }
+
+  static Map<String, String> _buildAuthorizedHeaders(String token) {
+    return {
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+  }
+
+  static String _maskToken(String token) {
+    if (token.length <= 10) return '${token.substring(0, token.length > 4 ? 4 : token.length)}...';
+    return '${token.substring(0, 6)}...${token.substring(token.length - 4)}';
+  }
+
+  static Future<ApiResponse<Map<String, dynamic>>> getSchoolCollegeNames(
+    String? token,
+  ) async {
+    try {
+      final headers = <String, String>{
+        'Accept': 'application/json',
+      };
+
+      if (token != null && token.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $token';
+      }
+
+      final response = await _makeRequest(
+        method: 'GET',
+        endpoint: schoolCollegeNameEndpoint,
+        headers: headers,
+      );
+
+      print('School List Response Status: ${response.statusCode}');
+      print('School List Response Body: ${response.body}');
+
+      return _handleResponse(response);
+    } on SocketException {
+      return ApiResponse(
+        success: false,
+        message: 'No internet connection. Please check your network and try again.',
+        data: null,
+      );
+    } on FormatException {
+      return ApiResponse(
+        success: false,
+        message: 'Invalid response format from server',
+        data: null,
+      );
+    } on TimeoutException {
+      return ApiResponse(
+        success: false,
+        message: 'Request timeout. Please check your connection and try again.',
+        data: null,
+      );
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Failed to fetch school list: ${e.toString()}',
+        data: null,
+      );
+    }
+  }
+
+  // Get IQ test questions
+  static Future<ApiResponse<Map<String, dynamic>>> getIqQuestions(String? token) async {
+    if (token == null || token.isEmpty) {
+      return ApiResponse(
+        success: false,
+        message: 'Authorization bearer token is required.',
+        data: null,
+      );
+    }
+
+    try {
+      print('Fetching IQ test questions...');
+      print('IQ token present: true');
+      print('IQ token preview: ${_maskToken(token)}');
+
+      final response = await _makeRequest(
+        method: 'GET',
+        endpoint: iqQuestionsEndpoint,
+        headers: _buildAuthorizedHeaders(token),
+      );
+
+      print('IQ Questions Response Status: ${response.statusCode}');
+      print('IQ Questions Response Body: ${response.body}');
+
+      return _handleResponse(response);
+    } on SocketException {
+      return ApiResponse(
+        success: false,
+        message: 'No internet connection. Please check your network and try again.',
+        data: null,
+      );
+    } on FormatException {
+      return ApiResponse(
+        success: false,
+        message: 'Invalid response format from server',
+        data: null,
+      );
+    } on TimeoutException {
+      return ApiResponse(
+        success: false,
+        message: 'Request timeout. Please check your connection and try again.',
+        data: null,
+      );
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Failed to fetch IQ questions: ${e.toString()}',
+        data: null,
+      );
+    }
+  }
+
+  // Submit IQ test answers
+  static Future<ApiResponse<Map<String, dynamic>>> submitIqAnswers(
+    String? token,
+    String studentName,
+    int age,
+    List<Map<String, dynamic>> answers,
+  ) async {
+    if (token == null || token.isEmpty) {
+      return ApiResponse(
+        success: false,
+        message: 'Authorization bearer token is required.',
+        data: null,
+      );
+    }
+
+    try {
+      print('Submitting IQ test answers...');
+      print('IQ submit token present: true');
+      print('IQ submit token preview: ${_maskToken(token)}');
+
+      final response = await _makeRequest(
+        method: 'POST',
+        endpoint: iqQuestionsEndpoint,
+        headers: _buildAuthorizedJsonHeaders(token),
+        body: {
+          'student_name': studentName,
+          'age': age,
+          'answers': answers,
+        },
+      );
+
+      print('IQ Submit Response Status: ${response.statusCode}');
+      print('IQ Submit Response Body: ${response.body}');
+
+      return _handleResponse(response);
+    } on SocketException {
+      return ApiResponse(
+        success: false,
+        message: 'No internet connection. Please check your network and try again.',
+        data: null,
+      );
+    } on FormatException {
+      return ApiResponse(
+        success: false,
+        message: 'Invalid response format from server',
+        data: null,
+      );
+    } on TimeoutException {
+      return ApiResponse(
+        success: false,
+        message: 'Request timeout. Please check your connection and try again.',
+        data: null,
+      );
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Failed to submit IQ answers: ${e.toString()}',
         data: null,
       );
     }

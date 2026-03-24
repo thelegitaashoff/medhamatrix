@@ -24,6 +24,7 @@ class UserService {
     int? age,
     String? birthday,
     String? school,
+    int? schoolId,
     String? email,
     String? phone,
   }) async {
@@ -33,6 +34,7 @@ class UserService {
         age: age,
         birthday: birthday,
         school: school,
+        schoolId: schoolId,
         email: email,
         phone: phone,
       );
@@ -55,6 +57,7 @@ class UserService {
           age: 24,
           birthday: '08/12/2000',
           school: 'Maplewood High School',
+          schoolId: null,
           email: 'emily.clark@email.com',
           phone: '+1 234 567 8910',
         );
@@ -68,6 +71,7 @@ class UserService {
         age: 24,
         birthday: '08/12/2000',
         school: 'Maplewood High School',
+        schoolId: null,
         email: 'emily.clark@email.com',
         phone: '+1 234 567 8910',
       );
@@ -132,14 +136,26 @@ class UserService {
     try {
       final response = await ApiService.getUserProfile(_authToken);
       if (response.success && response.data != null) {
-        // Parse the response data and create UserModel
-        final profileData = response.data!;
+        final responseData = response.data!;
+        final profileData = responseData['data'] is Map<String, dynamic>
+            ? responseData['data'] as Map<String, dynamic>
+            : responseData;
+        final userData = profileData['user'] is Map<String, dynamic>
+            ? profileData['user'] as Map<String, dynamic>
+            : const <String, dynamic>{};
+        final schoolData = profileData['college_school_name'] is Map<String, dynamic>
+            ? profileData['college_school_name'] as Map<String, dynamic>
+            : const <String, dynamic>{};
+
         _currentUser = UserModel(
-          fullName: profileData['full_name'] ?? profileData['name'] ?? 'User',
+          fullName: userData['full_name'] ?? profileData['full_name'] ?? profileData['name'] ?? 'User',
           age: _parseAge(profileData['age'] ?? profileData['dob']),
           birthday: profileData['dob'] ?? profileData['birthday'] ?? '',
-          school: profileData['school'] ?? profileData['institution'] ?? '',
-          email: profileData['email'] ?? '',
+          school: schoolData['name'] ?? profileData['school'] ?? profileData['institution'] ?? '',
+          schoolId: _parseSchoolId(
+            schoolData['id'] ?? schoolData['pk'] ?? profileData['college_school_name'],
+          ),
+          email: userData['email'] ?? profileData['email'] ?? '',
           phone: profileData['mobile'] ?? profileData['phone'] ?? '',
         );
         await _saveUserToStorage(_currentUser!);
@@ -156,32 +172,23 @@ class UserService {
   
   // Update user profile via API
   static Future<bool> updateUserProfileToAPI({
-    String? fullName,
-    int? age,
-    String? birthday,
-    String? school,
-    String? email,
-    String? phone,
+    required int schoolId,
+    required String schoolName,
+    required String birthday,
   }) async {
     try {
-      final updateData = <String, dynamic>{};
-      if (fullName != null) updateData['full_name'] = fullName;
-      if (age != null) updateData['age'] = age;
-      if (birthday != null) updateData['dob'] = birthday;
-      if (school != null) updateData['school'] = school;
-      if (email != null) updateData['email'] = email;
-      if (phone != null) updateData['mobile'] = phone;
+      final updateData = <String, dynamic>{
+        'college_school_name': schoolId,
+        'sclname': schoolName,
+        'dob': birthday,
+      };
       
       final response = await ApiService.updateUserProfile(updateData, _authToken);
       if (response.success) {
-        // Update local data
         await updateCurrentUser(
-          fullName: fullName,
-          age: age,
           birthday: birthday,
-          school: school,
-          email: email,
-          phone: phone,
+          school: schoolName,
+          schoolId: schoolId,
         );
         return true;
       } else {
@@ -216,6 +223,15 @@ class UserService {
       }
     }
     return 0;
+  }
+
+  static int? _parseSchoolId(dynamic value) {
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value);
+    if (value is Map<String, dynamic>) {
+      return _parseSchoolId(value['id'] ?? value['pk']);
+    }
+    return null;
   }
   
   // Initialize user service (call this when app starts)

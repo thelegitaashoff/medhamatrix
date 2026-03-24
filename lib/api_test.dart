@@ -34,8 +34,8 @@ class _ApiTestPageState extends State<ApiTestPage> {
       setState(() {
         _testResults += '\n--- API Endpoints ---\n';
         _testResults += 'Base URL: https://medhamatrix.com/api/auth\n';
-        _testResults += 'Signup: ${ApiService.baseUrl}/studentRegistration/\n';
-        _testResults += 'Login: ${ApiService.baseUrl}/api/token/\n';
+        _testResults += 'Signup: ${ApiService.signupEndpoint}\n';
+        _testResults += 'Login: ${ApiService.loginEndpoint}\n';
       });
 
     } catch (e) {

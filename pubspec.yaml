@@ -29,6 +29,8 @@ dependencies:
   connectivity_plus: ^6.1.4
   crypto: ^3.0.3
   webview_flutter: ^4.4.4
+  agora_rtc_engine: ^6.5.2
+  permission_handler: ^11.3.1
 
 
 dev_dependencies:
@@ -53,6 +55,7 @@ flutter:
 
   assets:
     - lib/fonts/
+    - assets/certificates/completion_certificate.png
     - assets\icons\IQ_test.png
     - assets/icons/student_counseling.png
     - assets/icons/parent_counseling.png

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:medhamatrix/medha_ui.dart';
 import 'phonepe_payment_page.dart';
 import 'upi_payment_options.dart';
+
 class PaymentOption {
   final IconData icon;
   final String title;
@@ -27,24 +29,23 @@ class _PaymentPageState extends State<PaymentPage> {
 
   @override
   Widget build(BuildContext context) {
-    final List<PaymentOption> paymentOptions = [
+    final paymentOptions = [
       PaymentOption(
-        icon: Icons.credit_card,
-        title: "Credit / Debit Card",
-        subtitle: "Pay securely using your card",
+        icon: Icons.credit_card_outlined,
+        title: 'Credit / Debit Card',
+        subtitle: 'Pay securely using your card',
       ),
       PaymentOption(
         icon: Icons.qr_code_scanner_rounded,
-        title: "UPI / QR",
-        subtitle: "Google Pay, PhonePe, Paytm, etc.",
+        title: 'UPI / QR',
+        subtitle: 'Google Pay, PhonePe, Paytm, and more',
         onTap: () {
-          // Navigate to UPI options page
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => UpiPaymentOptionsPage(
-                amount: 100.0, // This should be dynamic based on your app
-                userId: 'user123', // This should be dynamic
+              builder: (_) => UpiPaymentOptionsPage(
+                amount: 100.0,
+                userId: 'user123',
                 callbackUrl: 'https://yourapp.com/payment/callback',
               ),
             ),
@@ -52,17 +53,16 @@ class _PaymentPageState extends State<PaymentPage> {
         },
       ),
       PaymentOption(
-        icon: Icons.payment,
-        title: "PhonePe",
-        subtitle: "Pay securely with PhonePe gateway",
+        icon: Icons.account_balance_wallet_outlined,
+        title: 'PhonePe',
+        subtitle: 'Pay securely with PhonePe gateway',
         onTap: () {
-          // Navigate to PhonePe payment page
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => PhonePePaymentPage(
-                amount: 100.0, // This should be dynamic based on your app
-                userId: 'user123', // This should be dynamic
+              builder: (_) => PhonePePaymentPage(
+                amount: 100.0,
+                userId: 'user123',
                 callbackUrl: 'https://yourapp.com/payment/callback',
               ),
             ),
@@ -71,93 +71,73 @@ class _PaymentPageState extends State<PaymentPage> {
       ),
     ];
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Choose Payment Method'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 0.5,
-      ),
-      backgroundColor: Color.fromARGB(255, 224, 248, 255),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
-        child: Column(
-          children: [
-            for (int i = 0; i < paymentOptions.length; i++)
-              _buildPaymentOptionBox(paymentOptions[i], i),
-            const SizedBox(height: 28),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.arrow_forward_ios_rounded, size: 20),
-                label: const Text("Proceed to Pay", style: TextStyle(fontSize: 16)),
-                onPressed: selectedIndex != null
-                    ? () {
-                        final selectedOption = paymentOptions[selectedIndex!];
-                        if (selectedOption.onTap != null) {
-                          selectedOption.onTap!();
-                        } else {
-                          // Handle other payment methods
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text("${selectedOption.title} integration coming soon!"),
-                            ),
-                          );
-                        }
-                      }
-                    : null,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  backgroundColor: Colors.blueAccent,
-                  foregroundColor: Colors.white,
-                  elevation: 3,
-                ),
-              ),
+    return MedhaScaffold(
+      appBar: const MedhaTopBar(title: 'Payment', subtitle: 'Choose your payment method'),
+      child: MedhaPageView(
+        children: [
+          const MedhaHeroCard(
+            title: 'Payment Options',
+            subtitle: 'Complete your booking or assessment purchase with a secure method.',
+          ),
+          const SizedBox(height: 18),
+          ...List.generate(
+            paymentOptions.length,
+            (index) => Padding(
+              padding: const EdgeInsets.only(bottom: 14),
+              child: _buildPaymentOptionBox(paymentOptions[index], index),
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 10),
+          MedhaPrimaryButton(
+            label: 'Proceed to Pay',
+            icon: Icons.arrow_forward_rounded,
+            onPressed: selectedIndex == null
+                ? null
+                : () {
+                    final selectedOption = paymentOptions[selectedIndex!];
+                    if (selectedOption.onTap != null) {
+                      selectedOption.onTap!();
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('${selectedOption.title} integration coming soon!')),
+                      );
+                    }
+                  },
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildPaymentOptionBox(PaymentOption option, int index) {
     final isSelected = selectedIndex == index;
-    return GestureDetector(
-      onTap: () {
-        setState(() => selectedIndex = index);
-        if (option.onTap != null) option.onTap!();
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.blue[50] : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.13),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+    return InkWell(
+      borderRadius: BorderRadius.circular(24),
+      onTap: () => setState(() => selectedIndex = index),
+      child: MedhaCard(
+        child: Row(
+          children: [
+            MedhaIconTile(
+              icon: option.icon,
+              size: 58,
+              backgroundColor: isSelected ? MedhaColors.hero : const Color(0xFFEAF6F4),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(option.title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: MedhaColors.text)),
+                  const SizedBox(height: 4),
+                  Text(option.subtitle, style: const TextStyle(fontSize: 14, color: MedhaColors.muted)),
+                ],
+              ),
+            ),
+            Icon(
+              isSelected ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+              color: isSelected ? MedhaColors.primary : MedhaColors.muted,
             ),
           ],
-          border: Border.all(
-            color: isSelected ? Colors.blue : Colors.blueGrey.shade100,
-            width: isSelected ? 2.0 : 1.2,
-          ),
-        ),
-        child: ListTile(
-          leading: CircleAvatar(
-            backgroundColor: Colors.blueAccent.withOpacity(0.13),
-            child: Icon(option.icon, color: Colors.blue[900]),
-          ),
-          title: Text(option.title,
-              style: const TextStyle(
-                  fontWeight: FontWeight.bold, fontSize: 16)),
-          subtitle: Text(option.subtitle, style: const TextStyle(fontSize: 13)),
-          trailing: isSelected
-              ? const Icon(Icons.check_circle, color: Colors.blue, size: 28)
-              : const Icon(Icons.radio_button_off, color: Colors.grey, size: 26),
         ),
       ),
     );

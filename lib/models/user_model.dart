@@ -3,6 +3,7 @@ class UserModel {
   int age;
   String birthday;
   String school;
+  int? schoolId;
   String email;
   String phone;
   
@@ -11,6 +12,7 @@ class UserModel {
     required this.age,
     required this.birthday,
     required this.school,
+    this.schoolId,
     required this.email,
     required this.phone,
   });
@@ -25,6 +27,7 @@ class UserModel {
       'age': age,
       'birthday': birthday,
       'school': school,
+      'schoolId': schoolId,
       'email': email,
       'phone': phone,
     };
@@ -37,6 +40,7 @@ class UserModel {
       age: json['age'] ?? 0,
       birthday: json['birthday'] ?? '',
       school: json['school'] ?? '',
+      schoolId: json['schoolId'] as int?,
       email: json['email'] ?? '',
       phone: json['phone'] ?? '',
     );
@@ -48,6 +52,7 @@ class UserModel {
     int? age,
     String? birthday,
     String? school,
+    int? schoolId,
     String? email,
     String? phone,
   }) {
@@ -56,6 +61,7 @@ class UserModel {
       age: age ?? this.age,
       birthday: birthday ?? this.birthday,
       school: school ?? this.school,
+      schoolId: schoolId ?? this.schoolId,
       email: email ?? this.email,
       phone: phone ?? this.phone,
     );
