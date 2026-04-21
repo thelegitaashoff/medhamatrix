@@ -194,23 +194,29 @@ class _IqTestPageState extends State<IqTestPage> {
       );
     }
 
-    await _showDialog(
+    final shouldOpenCertificate = await _showDialog(
       title: response.success ? 'Submission Complete' : 'Submission Failed',
       message: message,
       iqScore: iqScore,
+      showCertificateAction: response.success,
     );
 
     if (response.success && mounted) {
-      Navigator.of(context).pop();
+      if (shouldOpenCertificate) {
+        Navigator.of(context).pushReplacementNamed('/certificate_download');
+      } else {
+        Navigator.of(context).pop();
+      }
     }
   }
 
-  Future<void> _showDialog({
+  Future<bool> _showDialog({
     required String title,
     required String message,
     dynamic iqScore,
+    bool showCertificateAction = false,
   }) {
-    return showDialog<void>(
+    return showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
@@ -254,19 +260,48 @@ class _IqTestPageState extends State<IqTestPage> {
                 ),
               ),
             ],
+            if (showCertificateAction) ...[
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: MedhaColors.surfaceAlt,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: MedhaColors.border),
+                ),
+                child: const Text(
+                  'Your certificate is ready. Open the Certificates section to view and download it.',
+                  style: TextStyle(
+                    fontSize: 14,
+                    height: 1.45,
+                    fontWeight: FontWeight.w600,
+                    color: MedhaColors.text,
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
         actions: [
+          if (showCertificateAction)
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text(
+                'Later',
+                style: TextStyle(color: MedhaColors.primary),
+              ),
+            ),
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text(
-              'OK',
-              style: TextStyle(color: MedhaColors.primary),
+            onPressed: () => Navigator.of(context).pop(showCertificateAction),
+            child: Text(
+              showCertificateAction ? 'View Certificate' : 'OK',
+              style: const TextStyle(color: MedhaColors.primary),
             ),
           ),
         ],
       ),
-    );
+    ).then((value) => value ?? false);
   }
 
   @override

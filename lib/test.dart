@@ -16,9 +16,15 @@ class _TestSelectionPageState extends State<TestSelectionPage> {
     await UserService.initialize();
 
     final user = UserService.currentUser;
+    final isAboveAllowedAge = user != null && user.age > 18;
     final hasSchool = user != null && user.schoolId != null && user.school.trim().isNotEmpty;
 
     if (!mounted) return;
+
+    if (isAboveAllowedAge) {
+      await _showAgeRestrictionDialog();
+      return;
+    }
 
     if (!hasSchool) {
       await showDialog<void>(
@@ -51,6 +57,97 @@ class _TestSelectionPageState extends State<TestSelectionPage> {
 
     await Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const IqTestPage()),
+    );
+  }
+
+  Future<void> _showAgeRestrictionDialog() {
+    return showDialog<void>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+        contentPadding: const EdgeInsets.fromLTRB(24, 18, 24, 12),
+        actionsPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
+        title: Column(
+          children: [
+            Container(
+              width: 76,
+              height: 76,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF3E8),
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFF4B183)),
+              ),
+              child: const Icon(
+                Icons.info_outline_rounded,
+                color: Color(0xFFE07A1F),
+                size: 38,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'MMCT Age Limit',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                color: MedhaColors.text,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'The MMCT test is only for students who are 18 years old or younger.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 15,
+                height: 1.5,
+                color: MedhaColors.muted,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: MedhaColors.surfaceAlt,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: MedhaColors.border),
+              ),
+              child: const Text(
+                'You are not eligible to give this test.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: MedhaColors.text,
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton.icon(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(
+              Icons.check_circle_outline_rounded,
+              size: 18,
+              color: MedhaColors.primary,
+            ),
+            label: const Text(
+              'OK',
+              style: TextStyle(
+                color: MedhaColors.primary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
